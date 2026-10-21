@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, JetBrains_Mono, Space_Grotesk } from 'next/font/google'
 import { site } from '@/content/site'
+import { StoreProvider } from '@/store/StoreProvider'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({
@@ -34,7 +35,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       lang="en"
       className={`${spaceGrotesk.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <StoreProvider>{children}</StoreProvider>
+      </body>
     </html>
   )
 }

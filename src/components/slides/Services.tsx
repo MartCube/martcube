@@ -1,27 +1,15 @@
 import { services, type Service } from '@/content/home'
 import { Eyebrow } from './Eyebrow'
+import { ServiceTabs } from './ServiceTabs'
 
-// Four panels side by side. For now this is a native sideways scroll (swipe, trackpad,
-// or the tabs). In task 4 the scroll engine pins it and drives it with vertical scroll.
+// Four panels side by side. On desktop the scroll engine pins this section and moves the
+// track sideways as the page scrolls. On touch screens the track is swiped natively.
 export function Services() {
   return (
-    <section id="services" aria-label="Services" className="relative min-h-svh">
-      <nav
-        aria-label="Services"
-        className="absolute inset-x-0 top-20 z-[5] flex gap-5 px-5 font-mono text-[11px] tracking-[0.1em] uppercase sm:top-28 sm:px-12 sm:text-xs"
-      >
-        {services.items.map(item => (
-          <a
-            key={item.id}
-            href={`#${item.id}`}
-            className="pb-1 text-muted transition-colors hover:text-lime focus-visible:text-lime focus-visible:outline-none"
-          >
-            {item.tab}
-          </a>
-        ))}
-      </nav>
+    <section id="services" aria-label="Services" className="relative h-svh snap-start smooth:overflow-hidden">
+      <ServiceTabs />
 
-      <div className="flex h-svh snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none]">
+      <div data-track className="flex h-svh snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] smooth:snap-none smooth:overflow-visible">
         {services.items.map((item, i) => (
           <ServicePanel key={item.id} item={item} index={i} total={services.items.length} />
         ))}

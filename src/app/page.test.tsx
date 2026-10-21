@@ -1,11 +1,16 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { services } from '@/content/home'
+import { StoreProvider } from '@/store/StoreProvider'
 import Home from './page'
+
+function renderHome() {
+  return render(<StoreProvider><Home /></StoreProvider>)
+}
 
 describe('Home', () => {
   it('renders the three slides in order', () => {
-    render(<Home />)
+    renderHome()
 
     const regions = screen.getAllByRole('region').map(r => r.getAttribute('aria-label'))
     expect(regions).toEqual(['Intro', 'Services', 'Contact'])
@@ -13,7 +18,7 @@ describe('Home', () => {
   })
 
   it('shows one panel per service, each reachable from the tabs', () => {
-    render(<Home />)
+    renderHome()
 
     const tabs = within(screen.getByRole('navigation', { name: 'Services' })).getAllByRole('link')
     expect(tabs).toHaveLength(services.items.length)
@@ -24,7 +29,7 @@ describe('Home', () => {
   })
 
   it('points the calls to action at the right slides', () => {
-    render(<Home />)
+    renderHome()
 
     expect(screen.getByRole('link', { name: 'Start a project' })).toHaveAttribute('href', '#contact')
     expect(screen.getByRole('link', { name: 'Tell us your idea' })).toHaveAttribute('href', '#contact')
