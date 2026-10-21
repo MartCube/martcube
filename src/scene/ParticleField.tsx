@@ -5,7 +5,7 @@ import gsap from 'gsap'
 import { useEffect, useMemo, useRef } from 'react'
 import type { ShaderMaterial } from 'three'
 import { useAppStore } from '@/store/hooks'
-import { morphProgress, SCENES } from './morph'
+import { sceneMotion } from '@/motion/controller'
 import { fragmentShader, vertexShader } from './shaders/particles'
 import { cubeShape } from './shapes/cube'
 import { scatter } from './shapes/scatter'
@@ -15,7 +15,9 @@ import { waveShape } from './shapes/wave'
 import { particleBudget } from './support'
 
 const NARROW = 720
-// Shader attribute for each shape, in scroll order. The cube is `position`, three.js's built-in.
+// One shape per deck stop: hero cube, the four services, contact sphere.
+const SCENES = 6
+// Shader attribute for each shape, in stop order. The cube is `position`, three.js's built-in.
 const SHAPE_ATTRIBUTES = ['position', 'aWave', 'aStore', 'aCms', 'aPhone', 'aSphere']
 const POINT_SIZE = 0.055
 
@@ -65,7 +67,9 @@ function Particles() {
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uIntro: { value: 0 },
-    uMorph: { value: 0 },
+    uFrom: { value: 0 },
+    uTo: { value: 0 },
+    uMix: { value: 1 },
     uBurst: { value: 0 },
     uPlace: { value: new Float32Array(SCENES * 3) },
     uAlpha: { value: new Float32Array(SCENES) },
@@ -76,7 +80,6 @@ function Particles() {
   }), [])
 
   const pointer = usePointer()
-  const morph = useMorph()
   const formSpot = useFormSpot()
   const burst = useBurst()
 
@@ -100,11 +103,14 @@ function Particles() {
     const narrow = size.width < NARROW
     const reduced = pointer.current.reduced
 
-    // Reduced motion: no idle movement at all, shapes only change as you scroll.
+    // Reduced motion: no idle movement at all, shapes only change with the slides.
     if (!reduced) u.uTime.value += delta
     u.uIntro.value = intro.current.value
 
-    u.uMorph.value += (morph() - u.uMorph.value) * 0.08
+    // The deck engine tweens this between stops.
+    u.uFrom.value = sceneMotion.from
+    u.uTo.value = sceneMotion.to
+    u.uMix.value = sceneMotion.mix
     u.uBurst.value = burst.current.value
 
     // Where each shape sits, as [x, y, scale] and opacity. Wide screens: shapes right of
@@ -175,33 +181,8 @@ function interleave(arrays: Float32Array[]): Float32Array {
   return out
 }
 
-// Reads the scroll position from the slides themselves, so it follows Lenis,
-// the pinned services strip and native scrolling alike.
-function useMorph() {
-  const slides = useRef<{ services: HTMLElement | null, panel: HTMLElement | null, contact: HTMLElement | null } | null>(null)
-
-  return () => {
-    if (!slides.current) {
-      const services = document.getElementById('services')
-      slides.current = { services, panel: services?.querySelector('article') ?? null, contact: document.getElementById('contact') }
-    }
-    const { services, panel, contact } = slides.current
-    if (!services || !panel || !contact) return 0
-    const section = services.getBoundingClientRect()
-    const first = panel.getBoundingClientRect()
-    return morphProgress({
-      servicesTop: section.top,
-      contactTop: contact.getBoundingClientRect().top,
-      // The strip slides left (transform on desktop, native scroll on touch), so the
-      // first panel's offset says how many panels along it is.
-      panel: (section.left - first.left) / Math.max(1, first.width),
-      viewportHeight: window.innerHeight,
-    })
-  }
-}
-
 // Where the contact form's column sits on its slide (it stays when the form swaps to "Message sent"), in scene units, so the sphere can wrap around it:
-// [x, y, scale, opacity]. Measured against the contact slide's top, so it doesn't move with scrolling.
+// [x, y, scale, opacity]. Measured against the contact slide's top, so it doesn't move as the slide slides in.
 const SPHERE_RADIUS = 2.3
 
 function useFormSpot() {

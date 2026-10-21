@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { lastStop, nearestStop, stopForHash, stopForSlide, stops } from './stops'
+import { lastStop, nextStop, stopForHash, stopForSlide, stops } from './stops'
 
 describe('stops', () => {
   it('has the hero, four service panels and contact', () => {
@@ -15,17 +15,25 @@ describe('stops', () => {
     expect(stopForHash('#nope')).toBeUndefined()
   })
 
-  it('maps a slide to its first stop', () => {
+  it('maps a slide (and service) to its stop', () => {
     expect(stopForSlide(0)).toBe(0)
     expect(stopForSlide(1)).toBe(1)
+    expect(stopForSlide(1, 2)).toBe(3)
     expect(stopForSlide(2)).toBe(5)
   })
 
-  it('finds the nearest stop to a scroll position', () => {
-    const positions = [0, 900, 1800, 2700, 3600, 4500]
-    expect(nearestStop(0, positions)).toBe(0)
-    expect(nearestStop(1300, positions)).toBe(1)
-    expect(nearestStop(1400, positions)).toBe(2)
-    expect(nearestStop(9999, positions)).toBe(5)
+  it('steps through every panel on wide screens', () => {
+    expect(nextStop(0, 1, false)).toBe(1)
+    expect(nextStop(3, 1, false)).toBe(4)
+    expect(nextStop(5, 1, false)).toBe(5)
+    expect(nextStop(0, -1, false)).toBe(0)
+  })
+
+  it('steps slide by slide on phones, keeping the open service tab', () => {
+    expect(nextStop(0, 1, true)).toBe(1)
+    expect(nextStop(0, 1, true, 2)).toBe(3)
+    expect(nextStop(3, 1, true, 2)).toBe(5)
+    expect(nextStop(5, -1, true, 3)).toBe(4)
+    expect(nextStop(5, 1, true)).toBe(5)
   })
 })

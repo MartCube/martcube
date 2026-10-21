@@ -8,7 +8,9 @@ test.describe('homepage', () => {
     await page.goto('/')
     await expect(page).toHaveTitle('MartCube | Websites that move')
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Websites that move.')
-    await expect(page.getByRole('region')).toHaveCount(3)
+    await expect(page.locator('main > section')).toHaveCount(3)
+    // Only the slide that's showing is exposed; the others wait behind it.
+    await expect(page.getByRole('region')).toHaveCount(1)
     expect(errors).toEqual([])
   })
 
@@ -18,10 +20,24 @@ test.describe('homepage', () => {
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(1)
   })
 
-  test('"Start a project" brings the contact form into view', async ({ page }) => {
+  test('"Start a project" goes straight to the contact form', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('link', { name: 'Start a project' }).click()
+    await page.getByRole('link', { name: 'Start a project' }).first().click()
     await expect(page.getByRole('form', { name: 'Contact form' })).toBeInViewport({ ratio: 0.3 })
+    await expect(page.locator('#services')).toBeHidden()
+  })
+
+  test('arrow keys step through the slides', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.locator('html[data-deck]')).toBeAttached()
+    await page.keyboard.press('ArrowDown')
+    await expect(page.getByRole('heading', { level: 1 })).toBeHidden()
+    await expect(page.getByRole('link', { name: 'Move', exact: true })).toHaveAttribute('aria-current', 'true')
+    // Keys pressed while a transition plays are ignored, so retry until this one lands.
+    await expect(async () => {
+      await page.keyboard.press('End')
+      await expect(page.getByRole('form', { name: 'Contact form' })).toBeVisible({ timeout: 500 })
+    }).toPass()
   })
 })
 

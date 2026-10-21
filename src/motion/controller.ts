@@ -1,17 +1,27 @@
 import { lastStop } from './stops'
 
-// The one way UI code moves the page. The scroll engine registers how to scroll;
-// buttons, links and keys call goTo / step without knowing which mode is active.
-type ScrollTo = (stop: number) => void
+// The one way UI code moves the deck. The deck engine registers how to move;
+// buttons, links and keys call goTo / step without knowing how it's done.
+type Move = (stop: number) => void
+type Step = (direction: 1 | -1) => void
 
-let scrollTo: ScrollTo = () => {}
+let move: Move = () => {}
+let stepper: Step = () => {}
 let current = 0
 
+// Which particle shape is showing, shared with the scene every frame:
+// it blends from shape `from` to shape `to` as `mix` runs 0 → 1.
+export const sceneMotion = { from: 0, to: 0, mix: 1 }
+
 export const controller = {
-  register(fn: ScrollTo) {
-    scrollTo = fn
+  register(goTo: Move, step: Step) {
+    move = goTo
+    stepper = step
     return () => {
-      if (scrollTo === fn) scrollTo = () => {}
+      if (move === goTo) {
+        move = () => {}
+        stepper = () => {}
+      }
     }
   },
   setCurrent(stop: number) {
@@ -21,9 +31,9 @@ export const controller = {
     return current
   },
   goTo(stop: number) {
-    scrollTo(Math.min(lastStop, Math.max(0, stop)))
+    move(Math.min(lastStop, Math.max(0, stop)))
   },
   step(direction: 1 | -1) {
-    this.goTo(current + direction)
+    stepper(direction)
   },
 }

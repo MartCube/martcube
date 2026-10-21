@@ -1,8 +1,8 @@
 # MartCube
 
-The website of MartCube, a web and app studio. Built with Next.js, React and TypeScript, with a WebGL particle field and scroll-driven motion.
+The website of MartCube, a web and app studio. Built with Next.js, React and TypeScript, with a WebGL particle field and a full-screen slide deck.
 
-> Phase 1: a one-page site with a WebGL particle field, scroll-driven motion and a contact form. Showcase projects, a blog and a CMS come in later phases.
+> Phase 1: a one-page site with a WebGL particle field, slide transitions and a contact form. Showcase projects, a blog and a CMS come in later phases.
 
 ## Stack
 
@@ -13,7 +13,7 @@ The website of MartCube, a web and app studio. Built with Next.js, React and Typ
 | Styling | Tailwind CSS v4, brand tokens in `src/app/globals.css` |
 | Lint and format | ESLint with `eslint-config-next` and `@stylistic` (no Prettier) |
 | State | Redux Toolkit |
-| Motion | GSAP with ScrollTrigger, Lenis |
+| Motion | GSAP |
 | 3D | React Three Fiber, custom shaders |
 | Tests | Vitest and Testing Library (unit), Playwright (smoke tests on the production build) |
 | Hosting | Netlify, with a preview deploy for every pull request |
@@ -48,7 +48,7 @@ src/
     ui/                small shared components (Logo, Button, Field)
   content/             all site text, typed (moves to a CMS later)
   lib/                 contact form schema (shared by browser and server)
-  motion/              scroll engine, stops, controller, text reveals
+  motion/              deck engine, stops, controller
   scene/               WebGL particle field, poster fallback, shapes, shaders
   store/               Redux store (ui slice)
 e2e/                   Playwright smoke tests
@@ -58,22 +58,22 @@ public/brand/          logo files and app icons
 ## How it works
 
 ```text
-            scroll / keys / links
+      wheel / trackpad / swipe / keys / links
                     │
-             motion/ScrollEngine ── Lenis + GSAP ScrollTrigger (desktop)
-                    │                native scroll + CSS snap (touch)
-                    ▼
-      Redux ui slice { slide, service, progress, sent }
-        │            │              │               │
-       HUD     ServiceTabs   motion/Reveals   scene/ParticleField
-                                               (reads the store and the
-                                                slides' positions per frame)
+             motion/DeckEngine ── GSAP timelines, input locked while one plays
+                    │         └── sceneMotion { from, to, mix } ──┐
+                    ▼                                             │
+      Redux ui slice { slide, service, progress, moving, sent }  │
+        │            │              │                            ▼
+       HUD     ServiceTabs   Header loader             scene/ParticleField
+                                                       (reads sceneMotion
+                                                        every frame)
 ```
 
-- **Stops.** The page has six stops: hero, four service panels, contact (`motion/stops.ts`). Desktop moves one stop per wheel gesture; touch devices scroll natively with snapping. Links and arrow keys go through `motion/controller.ts`, so they work the same in both modes.
+- **Deck.** The page doesn't scroll. It has six stops: hero, four service panels, contact (`motion/stops.ts`). The deck engine plays a GSAP transition between any two of them, so a link to contact goes straight there. One wheel or trackpad gesture moves one stop, momentum included, and input is locked while a transition plays (the spinner beside the logo). Phones have three slides with the services as tabs: swipe up and down between slides, sideways between services. A slide taller than the screen scrolls inside itself first. Links, keys and the HUD go through `motion/controller.ts`.
 - **State.** Redux holds where the visitor is and how many messages they've sent. Components subscribe with typed hooks. The particle scene reads the store inside its render loop with `store.getState()`, so it never re-renders React.
-- **Particles.** One `<points>` mesh with a spot for every particle in six shapes (cube, wave, store cards, page, phone, sphere), uploaded once. The vertex shader blends between them with one number, `uMorph` (0 to 5), that follows the scroll. Shapes are plain functions returning positions and tones (`scene/shapes/`), drawn with a small sketch kit.
-- **Fallbacks.** No WebGL, data saver, or a lost GPU context shows a static poster instead. Touch devices show the poster first and start WebGL on the first touch or scroll. Reduced motion turns off idle movement, the cycling word and reveals.
+- **Particles.** One `<points>` mesh with a spot for every particle in six shapes (cube, wave, shopping bag, CMS window, phone, sphere), uploaded once. The vertex shader morphs straight from one shape to another (`uFrom`, `uTo`, `uMix`), driven by the deck engine's transition. Shapes are plain functions returning positions and tones (`scene/shapes/`), drawn with a small kit of edges, faces and arcs (`scene/shapes/solid.ts`).
+- **Fallbacks.** No WebGL, data saver, or a lost GPU context shows a static poster instead. Touch devices show the poster first and start WebGL on the first touch. Reduced motion turns off idle movement and the cycling word, and slide transitions become quick fades.
 - **Contact.** One Zod schema validates in the browser (live, after the first submit) and again in a Server Action (`app/actions/contact.ts`). Sending is simulated in phase 1; phase 2 wires up email.
 
 ## Deploying

@@ -4,7 +4,7 @@ import { services } from '@/content/home'
 import { useAppSelector } from '@/store/hooks'
 import { selectService, selectSlide } from '@/store/uiSlice'
 
-// Tabs above the strip. Clicks are plain anchors; the scroll engine turns them into slides.
+// Tabs above the strip. Clicks are plain anchors; the deck engine turns them into slides.
 export function ServiceTabs() {
   const slide = useAppSelector(selectSlide)
   const active = useAppSelector(selectService)
