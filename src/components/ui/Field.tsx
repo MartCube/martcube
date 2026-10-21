@@ -28,6 +28,6 @@ export function Field({ id, label, error, className = '', children }: FieldProps
 }
 
 export const inputClass
-  = 'w-full rounded-[10px] border border-line bg-field px-3.5 py-[13px] text-base text-paper placeholder:text-[#7c7b75] '
+  = 'w-full rounded-[10px] border border-line bg-field px-3.5 py-[13px] text-base text-paper placeholder:text-[#8d8c86] '
     + 'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-lime '
     + 'aria-invalid:border-error disabled:opacity-60'

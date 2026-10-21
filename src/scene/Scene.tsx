@@ -2,14 +2,14 @@
 
 import dynamic from 'next/dynamic'
 
-// three.js and the particle code load after the page, in their own chunk, browser only.
-// The text and form never wait for WebGL.
-const ParticleField = dynamic(() => import('./ParticleField'), { ssr: false })
+// Browser only: whether to show particles or the poster depends on the device,
+// so nothing is rendered on the server. The text and form never wait for it.
+const SceneClient = dynamic(() => import('./SceneClient'), { ssr: false })
 
 export function Scene() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
-      <ParticleField />
+      <SceneClient />
     </div>
   )
 }

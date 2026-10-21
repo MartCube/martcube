@@ -78,7 +78,7 @@ function ContactFormRound({ onReset }: { onReset: () => void }) {
           <input {...fieldProps('email')} type="email" autoComplete="email" placeholder={form.email.placeholder} />
         </Field>
         <Field id="contact-need" label={form.need.label} className="sm:col-span-2">
-          <select {...fieldProps('need')} className={values.need ? inputClass : inputClass.replace('text-paper', 'text-[#7c7b75]')}>
+          <select {...fieldProps('need')} className={values.need ? inputClass : inputClass.replace('text-paper', 'text-[#8d8c86]')}>
             <option value="">{form.need.placeholder}</option>
             {form.need.options.map(option => <option key={option}>{option}</option>)}
           </select>

@@ -12,17 +12,26 @@ import { scatter } from './shapes/scatter'
 import { pageShape, phoneShape, storeShape } from './shapes/services'
 import { sphereShape } from './shapes/sphere'
 import { waveShape } from './shapes/wave'
+import { particleBudget } from './support'
 
 const NARROW = 720
 // Shader attribute for each shape, in scroll order. The cube is `position`, three.js's built-in.
 const SHAPE_ATTRIBUTES = ['position', 'aWave', 'aStore', 'aPage', 'aPhone', 'aSphere']
 const POINT_SIZE = 0.055
 
-// The one WebGL canvas behind the whole page.
-export default function ParticleField() {
+// The one WebGL canvas behind the whole page. Pixel ratio is capped: past 1.75 the
+// dots look the same but cost far more on high-density phones.
+export default function ParticleField({ onLost }: { onLost: () => void }) {
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={[1, 1.75]}
+      onCreated={({ gl }) => {
+        // The GPU can drop the context (driver reset, too many tabs). Switch to the poster.
+        gl.domElement.addEventListener('webglcontextlost', (e) => {
+          e.preventDefault()
+          onLost()
+        })
+      }}
       camera={{ fov: 45, position: [0, 0, 10] }}
       gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
       flat
@@ -37,7 +46,7 @@ function Particles() {
   const material = useRef<ShaderMaterial>(null)
   const intro = useRef({ value: 0 })
   const size = useThree(s => s.size)
-  const count = size.width < NARROW ? 3200 : 7000
+  const count = particleBudget(size.width, navigator.hardwareConcurrency)
 
   // Built once per particle count: a start position, a spot in each shape, tones and a random seed.
   const geometry = useMemo(() => {
@@ -90,7 +99,8 @@ function Particles() {
     const narrow = size.width < NARROW
     const reduced = pointer.current.reduced
 
-    u.uTime.value += delta * (reduced ? 0.25 : 1)
+    // Reduced motion: no idle movement at all, shapes only change as you scroll.
+    if (!reduced) u.uTime.value += delta
     u.uIntro.value = intro.current.value
 
     u.uMorph.value += (morph() - u.uMorph.value) * 0.08
