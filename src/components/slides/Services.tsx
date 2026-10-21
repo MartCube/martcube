@@ -1,3 +1,4 @@
+import { Lines } from '@/components/motion/Lines'
 import { services, type Service } from '@/content/home'
 import { Eyebrow } from './Eyebrow'
 import { ServiceTabs } from './ServiceTabs'
@@ -37,13 +38,10 @@ function ServicePanel({ item, index, total }: ServicePanelProps) {
         <div className="max-w-[560px]">
           <Eyebrow>{services.eyebrow}</Eyebrow>
           <h2 className="font-display text-[52px] leading-[0.95] font-bold tracking-[-0.045em] sm:text-[clamp(56px,7vw,104px)]">
-            {line1}
-            {' '}
-            <br />
-            {line2}
+            <Lines lines={[line1, line2]} />
           </h2>
-          <p className="mt-5 text-base text-soft sm:mt-7 sm:text-xl">{item.body}</p>
-          <ul aria-label="Good for" className="mt-6 flex flex-wrap gap-2 sm:mt-7">
+          <p data-reveal="item" className="mt-5 text-base text-soft sm:mt-7 sm:text-xl">{item.body}</p>
+          <ul data-reveal="item" aria-label="Good for" className="mt-6 flex flex-wrap gap-2 sm:mt-7">
             {item.tags.map(tag => (
               <li key={tag} className="rounded-full border border-line bg-ink/60 px-3.5 py-2 font-mono text-[11px] tracking-[0.08em] uppercase sm:text-xs">
                 {tag}
