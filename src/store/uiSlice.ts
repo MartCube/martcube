@@ -1,18 +1,20 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 // Where the visitor is on the homepage. Written by the deck engine,
-// read by the HUD, the service tabs, the header loader and the particle scene.
+// read by the HUD, the service tabs and the particle scene. The scene reports when it's loading.
 export type UiState = {
   slide: number
   service: number
   progress: number
-  // True while a slide transition plays. Input is locked and the header loader spins.
+  // True while a slide transition plays. Input is locked meanwhile.
   moving: boolean
+  // True while the particle scene downloads and starts. The header loader spins.
+  sceneLoading: boolean
   // Counts sent messages, so the scene can react to each new one with a burst.
   sent: number
 }
 
-const initialState: UiState = { slide: 0, service: 0, progress: 0, moving: false, sent: 0 }
+const initialState: UiState = { slide: 0, service: 0, progress: 0, moving: false, sceneLoading: false, sent: 0 }
 
 export const uiSlice = createSlice({
   name: 'ui',
@@ -28,6 +30,9 @@ export const uiSlice = createSlice({
     movingChanged(state, action: PayloadAction<boolean>) {
       state.moving = action.payload
     },
+    sceneLoadingChanged(state, action: PayloadAction<boolean>) {
+      state.sceneLoading = action.payload
+    },
     messageSent(state) {
       state.sent += 1
     },
@@ -37,9 +42,10 @@ export const uiSlice = createSlice({
     selectService: state => state.service,
     selectProgress: state => state.progress,
     selectMoving: state => state.moving,
+    selectSceneLoading: state => state.sceneLoading,
     selectSent: state => state.sent,
   },
 })
 
-export const { positionChanged, progressChanged, movingChanged, messageSent } = uiSlice.actions
-export const { selectSlide, selectService, selectProgress, selectMoving, selectSent } = uiSlice.selectors
+export const { positionChanged, progressChanged, movingChanged, sceneLoadingChanged, messageSent } = uiSlice.actions
+export const { selectSlide, selectService, selectProgress, selectMoving, selectSceneLoading, selectSent } = uiSlice.selectors

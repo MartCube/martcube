@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { makeStore } from './store'
-import { messageSent, movingChanged, positionChanged, progressChanged, selectMoving, selectProgress, selectSent, selectService, selectSlide } from './uiSlice'
+import { messageSent, movingChanged, positionChanged, progressChanged, sceneLoadingChanged, selectMoving, selectProgress, selectSceneLoading, selectSent, selectService, selectSlide } from './uiSlice'
 
 describe('ui slice', () => {
   it('starts on the first slide', () => {
@@ -30,6 +30,13 @@ describe('ui slice', () => {
     expect(selectMoving(store.getState())).toBe(false)
     store.dispatch(movingChanged(true))
     expect(selectMoving(store.getState())).toBe(true)
+  })
+
+  it('tracks whether the particle scene is loading', () => {
+    const store = makeStore()
+    expect(selectSceneLoading(store.getState())).toBe(false)
+    store.dispatch(sceneLoadingChanged(true))
+    expect(selectSceneLoading(store.getState())).toBe(true)
   })
 
   it('counts sent messages', () => {

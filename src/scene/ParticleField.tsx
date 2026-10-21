@@ -24,7 +24,7 @@ const POINT_SIZE = 0.055
 
 // The one WebGL canvas behind the whole page. Pixel ratio is capped: past 1.75 the
 // dots look the same but cost far more on high-density phones.
-export default function ParticleField({ onLost }: { onLost: () => void }) {
+export default function ParticleField({ onReady, onLost }: { onReady: () => void, onLost: () => void }) {
   return (
     <Canvas
       dpr={[1, 1.75]}
@@ -40,14 +40,16 @@ export default function ParticleField({ onLost }: { onLost: () => void }) {
       flat
       linear
     >
-      <Particles />
+      <Particles onReady={onReady} />
     </Canvas>
   )
 }
 
-function Particles() {
+function Particles({ onReady }: { onReady: () => void }) {
   const material = useRef<ShaderMaterial>(null)
   const intro = useRef({ value: 0 })
+  // Frames drawn so far. The scene counts as ready once the first one is on screen.
+  const frames = useRef(0)
   const size = useThree(s => s.size)
   const count = particleBudget(size.width, navigator.hardwareConcurrency)
 
@@ -99,6 +101,7 @@ function Particles() {
 
   useFrame((state, delta) => {
     if (!material.current) return
+    if (++frames.current === 2) onReady()
     const u = material.current.uniforms as typeof uniforms
     const { viewport, size, gl } = state
     const narrow = size.width < NARROW
