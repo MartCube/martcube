@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+import { useAppDispatch } from '@/store/hooks'
+import { sceneLoadingChanged } from '@/store/uiSlice'
 import { Poster } from './Poster'
 import { canRunParticles } from './support'
 
@@ -26,6 +28,16 @@ function initialPlan() {
 export default function SceneClient() {
   const [plan] = useState(initialPlan)
   const [mode, setMode] = useState<Mode>(plan.mode)
+  const dispatch = useAppDispatch()
+
+  // From the moment the particles start loading until their first frame, the header loader spins.
+  const starting = mode === 'particles'
+  useEffect(() => {
+    if (starting) dispatch(sceneLoadingChanged(true))
+    return () => {
+      dispatch(sceneLoadingChanged(false))
+    }
+  }, [starting, dispatch])
 
   useEffect(() => {
     const start = () => setMode(canRunParticles() ? 'particles' : 'poster')
@@ -49,7 +61,7 @@ export default function SceneClient() {
 
   return (
     <>
-      {mode === 'particles' && <ParticleField onLost={() => setMode('poster')} />}
+      {mode === 'particles' && <ParticleField onReady={() => dispatch(sceneLoadingChanged(false))} onLost={() => setMode('poster')} />}
       {/* While the particles gather, the poster fades out underneath them. */}
       {mode !== 'waiting' && <Poster fading={mode === 'particles'} />}
     </>
