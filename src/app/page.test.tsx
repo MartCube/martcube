@@ -14,7 +14,7 @@ describe('Home', () => {
 
     const regions = screen.getAllByRole('region').map(r => r.getAttribute('aria-label'))
     expect(regions).toEqual(['Intro', 'Services', 'Contact'])
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Websites that move.')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveAccessibleName('Websites that move.')
   })
 
   it('shows one panel per service, each reachable from the tabs', () => {

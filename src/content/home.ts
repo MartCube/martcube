@@ -10,7 +10,9 @@ export type Service = {
 
 export const hero = {
   eyebrow: 'Web & app studio · Remote',
-  title: ['Websites', 'that move.'],
+  // The last word of the headline cycles through these.
+  title: ['Websites', 'that'],
+  words: ['move.', 'sell.', 'think.'],
   body: 'We design and build fast, animated websites, online stores and web apps that make your business impossible to scroll past.',
   primary: { label: 'Tell us your idea', href: '#contact' },
   secondary: { label: 'See what we do', href: '#services' },

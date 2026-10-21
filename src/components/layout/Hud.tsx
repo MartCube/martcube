@@ -12,9 +12,11 @@ const pad = (n: number) => String(n).padStart(2, '0')
 export function Hud() {
   const slide = useAppSelector(selectSlide)
   const progress = useAppSelector(selectProgress)
+  // On phones the contact form is taller than the screen, so the bar steps aside there.
+  const onContact = slide === slideCount - 1
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10 flex items-center justify-between px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] font-mono text-[11px] tracking-[0.12em] text-muted sm:px-12 sm:pb-6 sm:text-xs">
+    <div className={`pointer-events-none fixed inset-x-0 bottom-0 z-10 flex items-center justify-between transition-[translate,opacity] duration-500 ${onContact ? 'max-md:translate-y-full max-md:opacity-0' : ''} px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] font-mono text-[11px] tracking-[0.12em] text-muted sm:px-12 sm:pb-6 sm:text-xs`}>
       <div className="flex items-center gap-3.5 tabular-nums">
         <span>
           <span className="text-paper">{pad(slide + 1)}</span>
