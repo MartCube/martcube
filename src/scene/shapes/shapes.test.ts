@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { LIME } from '../colors'
 import { sphereShape } from './sphere'
-import { pageShape, phoneShape, storeShape } from './services'
+import { cmsShape, phoneShape, storeShape } from './services'
 import { waveShape } from './wave'
 
 const count = 3000
@@ -38,7 +38,7 @@ describe('sphereShape', () => {
 })
 
 describe('service shapes', () => {
-  for (const [name, build] of [['store', storeShape], ['page', pageShape], ['phone', phoneShape]] as const) {
+  for (const [name, build] of [['store', storeShape], ['cms', cmsShape], ['phone', phoneShape]] as const) {
     it(`${name} fills every particle and stays in frame`, () => {
       const { positions, tones } = build(count, fixed)
       expect(positions).toHaveLength(count * 3)

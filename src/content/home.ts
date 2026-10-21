@@ -36,8 +36,8 @@ export const services = {
       tags: ['Payments', 'Shipping', 'Fast checkout'],
     },
     {
-      id: 'services-editable',
-      tab: 'Editable',
+      id: 'services-cms',
+      tab: 'CMS',
       title: ['Sites you', 'can edit.'],
       body: 'Change every page yourself in a friendly editor, in every language you sell in. No developer needed for a new headline.',
       tags: ['Easy editor', 'Multilingual', 'SEO ready'],
@@ -61,7 +61,7 @@ export const contact = {
     need: {
       label: 'What do you need?',
       placeholder: 'Choose one (optional)',
-      options: ['A website that moves', 'An online store', 'A site I can edit', 'An app or MVP', 'Not sure yet'],
+      options: ['A website that moves', 'An online store', 'A CMS site I can edit', 'An app or MVP', 'Not sure yet'],
     },
     message: { label: 'Message', placeholder: 'What are you building, and roughly when?' },
     submit: 'Send message',

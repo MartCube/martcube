@@ -10,7 +10,7 @@ describe('stops', () => {
   it('maps in-page links to stops', () => {
     expect(stopForHash('#hero')).toBe(0)
     expect(stopForHash('#services')).toBe(1)
-    expect(stopForHash('#services-editable')).toBe(3)
+    expect(stopForHash('#services-cms')).toBe(3)
     expect(stopForHash('#contact')).toBe(5)
     expect(stopForHash('#nope')).toBeUndefined()
   })

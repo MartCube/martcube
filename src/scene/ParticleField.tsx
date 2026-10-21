@@ -9,14 +9,14 @@ import { morphProgress, SCENES } from './morph'
 import { fragmentShader, vertexShader } from './shaders/particles'
 import { cubeShape } from './shapes/cube'
 import { scatter } from './shapes/scatter'
-import { pageShape, phoneShape, storeShape } from './shapes/services'
+import { cmsShape, phoneShape, storeShape } from './shapes/services'
 import { sphereShape } from './shapes/sphere'
 import { waveShape } from './shapes/wave'
 import { particleBudget } from './support'
 
 const NARROW = 720
 // Shader attribute for each shape, in scroll order. The cube is `position`, three.js's built-in.
-const SHAPE_ATTRIBUTES = ['position', 'aWave', 'aStore', 'aPage', 'aPhone', 'aSphere']
+const SHAPE_ATTRIBUTES = ['position', 'aWave', 'aStore', 'aCms', 'aPhone', 'aSphere']
 const POINT_SIZE = 0.055
 
 // The one WebGL canvas behind the whole page. Pixel ratio is capped: past 1.75 the
@@ -50,7 +50,7 @@ function Particles() {
 
   // Built once per particle count: a start position, a spot in each shape, tones and a random seed.
   const geometry = useMemo(() => {
-    const shapes = [cubeShape, waveShape, storeShape, pageShape, phoneShape, sphereShape].map(build => build(count))
+    const shapes = [cubeShape, waveShape, storeShape, cmsShape, phoneShape, sphereShape].map(build => build(count))
     return {
       start: scatter(count),
       positions: shapes.map(s => s.positions),
@@ -77,6 +77,7 @@ function Particles() {
 
   const pointer = usePointer()
   const morph = useMorph()
+  const formSpot = useFormSpot()
   const burst = useBurst()
 
   // Particles gather into the cube once, on load. Reduced motion skips straight to the cube.
@@ -116,7 +117,7 @@ function Particles() {
           [w * 0.36, h * 0.5, 0.62, 0.55], // cube
           [0, -h * 0.45, 0.6, 0.4], // wave
           [0, h * 0.42, 0.5, 0.6], // store cards
-          [0, h * 0.42, 0.5, 0.6], // page
+          [0, h * 0.42, 0.5, 0.6], // CMS layers
           [0, h * 0.4, 0.55, 0.6], // phone
           [w * 0.3, h * 0.55, 0.6, 0.35], // sphere
         ]
@@ -126,7 +127,7 @@ function Particles() {
           [w * 0.5, -h * 0.02, 0.95, 0.9],
           [w * 0.5, 0, 0.95, 0.9],
           [w * 0.5, 0, 1, 0.9],
-          [w * 0.45, 0, 1.3, 0.6],
+          formSpot(viewport.width, viewport.height) ?? [w * 0.45, 0, 1.3, 0.6],
         ]
     scenes.forEach(([x, y, scale, alpha], i) => {
       u.uPlace.value.set([x!, y!, scale!], i * 3)
@@ -196,6 +197,31 @@ function useMorph() {
       panel: (section.left - first.left) / Math.max(1, first.width),
       viewportHeight: window.innerHeight,
     })
+  }
+}
+
+// Where the contact form's column sits on its slide (it stays when the form swaps to "Message sent"), in scene units, so the sphere can wrap around it:
+// [x, y, scale, opacity]. Measured against the contact slide's top, so it doesn't move with scrolling.
+const SPHERE_RADIUS = 2.3
+
+function useFormSpot() {
+  const els = useRef<{ slide: HTMLElement | null, form: HTMLElement | null } | null>(null)
+
+  return (worldWidth: number, worldHeight: number) => {
+    els.current ??= { slide: document.getElementById('contact'), form: document.querySelector<HTMLElement>('#contact form')?.parentElement ?? null }
+    const { slide, form } = els.current
+    if (!slide || !form?.isConnected) {
+      els.current = null
+      return null
+    }
+    const rect = form.getBoundingClientRect()
+    const top = slide.getBoundingClientRect().top
+    const toX = worldWidth / window.innerWidth
+    const toY = worldHeight / window.innerHeight
+    const x = (rect.left + rect.width / 2 - window.innerWidth / 2) * toX
+    const y = (window.innerHeight / 2 - (rect.top - top + rect.height / 2)) * toY
+    const radius = Math.max(rect.width * toX, rect.height * toY) * 0.62
+    return [x, y, radius / SPHERE_RADIUS, 0.6]
   }
 }
 
