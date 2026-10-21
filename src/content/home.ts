@@ -53,4 +53,22 @@ export const services = {
 export const contact = {
   title: ['Got an idea?', 'Say hi.'],
   body: 'A few lines about your project is all we need to start.',
+  form: {
+    name: { label: 'Name', placeholder: 'Your name' },
+    email: { label: 'Email', placeholder: 'you@company.com' },
+    need: {
+      label: 'What do you need?',
+      placeholder: 'Choose one (optional)',
+      options: ['A website that moves', 'An online store', 'A site I can edit', 'An app or MVP', 'Not sure yet'],
+    },
+    message: { label: 'Message', placeholder: 'What are you building, and roughly when?' },
+    submit: 'Send message',
+    sending: 'Sending',
+    failed: 'Something went wrong. Please try again.',
+  },
+  sent: {
+    title: 'Message sent.',
+    body: (name: string, email: string) => `Thanks, ${name}. We read every message and will get back to you at ${email} soon.`,
+    again: 'Send another',
+  },
 } as const
