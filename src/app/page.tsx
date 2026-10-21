@@ -3,6 +3,7 @@ import { Hud } from '@/components/layout/Hud'
 import { Contact } from '@/components/slides/Contact'
 import { Hero } from '@/components/slides/Hero'
 import { Services } from '@/components/slides/Services'
+import { Reveals } from '@/motion/Reveals'
 import { ScrollEngine } from '@/motion/ScrollEngine'
 import { Scene } from '@/scene/Scene'
 
@@ -18,6 +19,7 @@ export default function Home() {
       </main>
       <Hud />
       <ScrollEngine />
+      <Reveals />
     </>
   )
 }
