@@ -4,10 +4,12 @@ import { Contact } from '@/components/slides/Contact'
 import { Hero } from '@/components/slides/Hero'
 import { Services } from '@/components/slides/Services'
 import { ScrollEngine } from '@/motion/ScrollEngine'
+import { Scene } from '@/scene/Scene'
 
 export default function Home() {
   return (
     <>
+      <Scene />
       <Header />
       <main>
         <Hero />

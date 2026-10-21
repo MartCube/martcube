@@ -12,10 +12,11 @@ The website of MartCube, a web and app studio. Built with Next.js, React and Typ
 | Language | TypeScript, strict |
 | Styling | Tailwind CSS v4, brand tokens in `src/app/globals.css` |
 | Lint and format | ESLint with `eslint-config-next` and `@stylistic` (no Prettier) |
+| State | Redux Toolkit |
+| Motion | GSAP with ScrollTrigger, Lenis |
+| 3D | React Three Fiber, custom shaders |
 | Tests | Vitest and Testing Library |
 | Hosting | Netlify, with a preview deploy for every pull request |
-
-Coming in later tasks: React Three Fiber, GSAP with ScrollTrigger, Lenis and Redux Toolkit.
 
 ## Getting started
 
@@ -41,6 +42,9 @@ src/
   app/            routes, layout, metadata, icons
   components/ui/  small shared components (Logo, Button, Field)
   content/        all site text, typed (moves to a CMS later)
+  motion/         scroll engine and slide stops
+  scene/          WebGL particle field, shapes and shaders
+  store/          Redux store
 public/brand/     logo files and app icons
 ```
 
