@@ -9,16 +9,17 @@ import { sceneMotion } from '@/motion/controller'
 import { fragmentShader, vertexShader } from './shaders/particles'
 import { cubeShape } from './shapes/cube'
 import { scatter } from './shapes/scatter'
-import { cmsShape, phoneShape, storeShape } from './shapes/services'
+import { cmsShape, appShape, storeShape } from './shapes/services'
 import { sphereShape } from './shapes/sphere'
 import { waveShape } from './shapes/wave'
 import { particleBudget } from './support'
 
 const NARROW = 720
+const CAMERA_Z = 10
 // One shape per deck stop: hero cube, the four services, contact sphere.
 const SCENES = 6
 // Shader attribute for each shape, in stop order. The cube is `position`, three.js's built-in.
-const SHAPE_ATTRIBUTES = ['position', 'aWave', 'aStore', 'aCms', 'aPhone', 'aSphere']
+const SHAPE_ATTRIBUTES = ['position', 'aWave', 'aStore', 'aCms', 'aApp', 'aSphere']
 const POINT_SIZE = 0.055
 
 // The one WebGL canvas behind the whole page. Pixel ratio is capped: past 1.75 the
@@ -34,7 +35,7 @@ export default function ParticleField({ onLost }: { onLost: () => void }) {
           onLost()
         })
       }}
-      camera={{ fov: 45, position: [0, 0, 10] }}
+      camera={{ fov: 45, position: [0, 0, CAMERA_Z] }}
       gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
       flat
       linear
@@ -52,7 +53,7 @@ function Particles() {
 
   // Built once per particle count: a start position, a spot in each shape, tones and a random seed.
   const geometry = useMemo(() => {
-    const shapes = [cubeShape, waveShape, storeShape, cmsShape, phoneShape, sphereShape].map(build => build(count))
+    const shapes = [cubeShape, waveShape, storeShape, cmsShape, appShape, sphereShape].map(build => build(count))
     return {
       start: scatter(count),
       positions: shapes.map(s => s.positions),
@@ -124,7 +125,7 @@ function Particles() {
           [0, -h * 0.45, 0.6, 0.4], // wave
           [0, h * 0.42, 0.5, 0.6], // store cards
           [0, h * 0.42, 0.5, 0.6], // CMS layers
-          [0, h * 0.4, 0.55, 0.6], // phone
+          [0, h * 0.4, 0.55, 0.6], // app icon
           [w * 0.3, h * 0.55, 0.6, 0.35], // sphere
         ]
       : [
@@ -202,8 +203,22 @@ function useFormSpot() {
     const x = (rect.left + rect.width / 2 - window.innerWidth / 2) * toX
     const y = (window.innerHeight / 2 - (rect.top - top + rect.height / 2)) * toY
     const radius = Math.max(rect.width * toX, rect.height * toY) * 0.62
-    return [x, y, radius / SPHERE_RADIUS, 0.6]
+    return [aim(x, radius), aim(y, radius), radius / SPHERE_RADIUS, 0.6]
   }
+}
+
+// The camera looks at the middle of the screen, so a sphere off to one side looks shifted further
+// out: its outline is wider on the far side. This finds where to put its centre so the outline is
+// centred on `target` (one axis at a time, in scene units on the z = 0 plane).
+function aim(target: number, radius: number): number {
+  const outlineCentre = (at: number) => {
+    const angle = Math.atan(at / CAMERA_Z)
+    const half = Math.asin(Math.min(1, radius / Math.hypot(at, CAMERA_Z)))
+    return (CAMERA_Z * (Math.tan(angle + half) + Math.tan(angle - half))) / 2
+  }
+  let at = target
+  for (let i = 0; i < 4; i++) at += target - outlineCentre(at)
+  return at
 }
 
 // Watches Redux for sent messages and plays a short outward burst for each one.

@@ -13,7 +13,7 @@ export function Contact() {
           <h2 className="font-display text-[46px] leading-[0.92] font-bold tracking-[-0.045em] sm:text-[clamp(56px,7vw,104px)]">
             <Lines lines={[line1, <span key="2" className="text-lime">{line2}</span>]} />
           </h2>
-          <p data-reveal="item" className="mt-4 max-w-[400px] text-base text-soft sm:mt-8 sm:text-lg">{contact.body}</p>
+          <p data-reveal="item" className="mt-4 max-w-[400px] text-base text-balance text-soft sm:mt-8 sm:text-lg">{contact.body}</p>
         </div>
         <div data-reveal="item" className="w-full lg:w-[520px] lg:flex-none">
           <ContactForm />

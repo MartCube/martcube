@@ -1,7 +1,7 @@
 import { paletteGlsl } from '../colors'
 
 // Vertex shader: every particle has a spot in six shapes, one per deck stop:
-// 0 cube, 1 wave, 2 store bag, 3 CMS window, 4 phone, 5 sphere.
+// 0 cube, 1 wave, 2 store bag, 3 CMS window, 4 app icon, 5 sphere.
 // The deck morphs straight from shape `uFrom` to shape `uTo` as `uMix` runs 0 → 1,
 // so a jump from the cube to the sphere never passes through the shapes between.
 // Then the cursor pushes particles away. All motion is computed here, on the GPU.
@@ -25,10 +25,10 @@ export const vertexShader = /* glsl */ `
   attribute vec3 aWave;
   attribute vec3 aStore;
   attribute vec3 aCms;
-  attribute vec3 aPhone;
+  attribute vec3 aApp;
   attribute vec3 aSphere;
   attribute vec3 aTonesA; // cube, wave, store
-  attribute vec3 aTonesB; // cms, phone, sphere
+  attribute vec3 aTonesB; // cms, app, sphere
   attribute float aSeed;
 
   varying vec3 vColor;
@@ -67,19 +67,19 @@ export const vertexShader = /* glsl */ `
     vec3 wave = rotateX(0.45 + uTilt.y * 0.15) * rotateY(-0.2 + uTilt.x * 0.2) * w;
 
     // The bag turns slowly like the cube, seen a little from above. The CMS window and the
-    // phone only sway, so their screens keep facing the viewer and their layers show depth.
+    // app icon only sway, so their fronts keep facing the viewer and their layers show depth.
     mat3 turn = rotateX(0.42 + uTilt.y * 0.3) * rotateY(uTime * 0.3 + 0.6 + uTilt.x * 0.5);
     mat3 sway = rotateX(0.15 + uTilt.y * 0.3) * rotateY(-0.4 + sin(uTime * 0.45) * 0.3 + uTilt.x * 0.5);
     vec3 store = turn * aStore;
     vec3 cms = sway * aCms;
-    vec3 phone = sway * aPhone;
+    vec3 app = sway * aApp;
 
     // Breathing sphere that turns slowly; a sent message blows it outward for a moment.
     float breath = 1.0 + 0.03 * sin(uTime * 1.5 + aSeed * 6.283);
     float burst = uBurst * (0.2 + aSeed * 0.6);
     vec3 sphere = rotateX(0.3 + uTilt.y * 0.3) * rotateY(uTime * 0.2 + uTilt.x * 0.5) * aSphere * (breath + burst);
 
-    vec3 shapes[6] = vec3[6](place(cube, 0), place(wave, 1), place(store, 2), place(cms, 3), place(phone, 4), place(sphere, 5));
+    vec3 shapes[6] = vec3[6](place(cube, 0), place(wave, 1), place(store, 2), place(cms, 3), place(app, 4), place(sphere, 5));
     float tones[6] = float[6](aTonesA.x, aTonesA.y, aTonesA.z, aTonesB.x, aTonesB.y, aTonesB.z);
     int a = int(uFrom + 0.5);
     int b = int(uTo + 0.5);
