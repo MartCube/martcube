@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* `smooth:` styles apply only while the desktop scroll engine runs (see src/motion/ScrollEngine.tsx). */
+@custom-variant smooth (&:where([data-scroll="smooth"], [data-scroll="smooth"] *));
+
 /* Brand tokens (direction A, "Signal"). Use them as Tailwind utilities: bg-ink, text-paper, text-lime, font-display... */
 @theme {
   --color-ink: #0a0b0f;
@@ -22,10 +25,9 @@
     color-scheme: dark;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    html {
-      scroll-behavior: smooth;
-    }
+  /* Touch, small screens and reduced motion: native scroll that settles on each slide. */
+  html[data-scroll="native"] {
+    scroll-snap-type: y proximity;
   }
 
   body {
