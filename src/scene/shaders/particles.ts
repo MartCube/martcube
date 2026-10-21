@@ -1,7 +1,7 @@
 import { paletteGlsl } from '../colors'
 
 // Vertex shader: every particle has a spot in six shapes, one per scroll stop:
-// 0 cube, 1 wave, 2 store cards, 3 page, 4 phone, 5 sphere.
+// 0 cube, 1 wave, 2 store bag, 3 CMS layers, 4 phone, 5 sphere.
 // `uMorph` runs 0 → 5 with the scroll and blends from one to the next, then the
 // cursor pushes particles away. All motion is computed here, on the GPU.
 //
@@ -21,11 +21,11 @@ export const vertexShader = /* glsl */ `
   attribute vec3 aStart;
   attribute vec3 aWave;
   attribute vec3 aStore;
-  attribute vec3 aPage;
+  attribute vec3 aCms;
   attribute vec3 aPhone;
   attribute vec3 aSphere;
   attribute vec3 aTonesA; // cube, wave, store
-  attribute vec3 aTonesB; // page, phone, sphere
+  attribute vec3 aTonesB; // cms, phone, sphere
   attribute float aSeed;
 
   varying vec3 vColor;
@@ -63,11 +63,12 @@ export const vertexShader = /* glsl */ `
     w.y = sin(w.x * 0.55 + uTime * 0.9) * 0.45 + sin(w.z * 0.9 - uTime * 0.7 + w.x * 0.2) * 0.3;
     vec3 wave = rotateX(0.45 + uTilt.y * 0.15) * rotateY(-0.2 + uTilt.x * 0.2) * w;
 
-    // The flat service drawings sway gently, turned a little so their depth shows.
-    mat3 sway = rotateX(0.1 + uTilt.y * 0.3) * rotateY(-0.35 + sin(uTime * 0.4) * 0.25 + uTilt.x * 0.5);
-    vec3 bob = vec3(0.0, sin(uTime * 0.8 + aStore.x) * 0.06, 0.0);
-    vec3 store = sway * (aStore + bob);
-    vec3 page = sway * aPage;
+    // The bag and the CMS layers turn slowly like the cube, seen a little from above.
+    // The phone only sways, so its screen keeps facing the viewer.
+    mat3 turn = rotateX(0.42 + uTilt.y * 0.3) * rotateY(uTime * 0.3 + 0.6 + uTilt.x * 0.5);
+    mat3 sway = rotateX(0.15 + uTilt.y * 0.3) * rotateY(-0.4 + sin(uTime * 0.45) * 0.3 + uTilt.x * 0.5);
+    vec3 store = turn * aStore;
+    vec3 cms = turn * aCms;
     vec3 phone = sway * aPhone;
 
     // Breathing sphere that turns slowly; a sent message blows it outward for a moment.
@@ -85,7 +86,7 @@ export const vertexShader = /* glsl */ `
     vec3 shape = place(cube, 0);
     shape = mix(shape, place(wave, 1), t1);
     shape = mix(shape, place(store, 2), t2);
-    shape = mix(shape, place(page, 3), t3);
+    shape = mix(shape, place(cms, 3), t3);
     shape = mix(shape, place(phone, 4), t4);
     shape = mix(shape, place(sphere, 5), t5);
 
