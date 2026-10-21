@@ -54,7 +54,7 @@ export const services = {
 
 export const contact = {
   title: ['Got an idea?', 'Say hi.'],
-  body: 'A few lines about your project is all we need to start.',
+  body: 'A few lines about your project and your timeline are all we need to get started.',
   form: {
     name: { label: 'Name', placeholder: 'Your name' },
     email: { label: 'Email', placeholder: 'you@company.com' },

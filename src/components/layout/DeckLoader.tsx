@@ -11,7 +11,7 @@ export function DeckLoader() {
   return (
     <span
       aria-hidden="true"
-      className={`size-[18px] rounded-full border-2 border-paper/15 border-t-lime transition-opacity duration-300 motion-safe:animate-spin ${moving ? 'opacity-100' : 'opacity-0'}`}
+      className={`size-[18px] translate-y-[2px] rounded-full border-2 border-paper/15 border-t-lime transition-opacity duration-300 motion-safe:animate-spin ${moving ? 'opacity-100' : 'opacity-0'}`}
     />
   )
 }

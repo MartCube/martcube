@@ -46,30 +46,38 @@ export function cmsShape(count: number, random?: Random): Shape {
   ], count, random)
 }
 
-// Apps: a phone in an exploded view. The body at the back, its screen's interface floating
-// in front of it, and a lime notification popping out furthest forward.
-export function phoneShape(count: number, random?: Random): Shape {
-  const ui = 0.4
-  const note = 0.85
+// Apps: a 3D app icon, a rounded tile with depth, with a lime AI sparkle on its face
+// and a tilted orbit around it carrying three small lime nodes.
+export function appShape(count: number, random?: Random): Shape {
+  const front = 0.22
+  const half = 1.1
   return build([
-    // Body: front and back outlines with the speaker slot.
-    ...roundRect([0, 0], 1.8, 3.4, 0.28, 0),
-    ...roundRect([0, 0], 1.8, 3.4, 0.28, -0.22),
-    line([-0.2, 1.52, 0], [0.2, 1.52, 0]),
-    // Interface: a card with a lime chart, two tiles and the tab bar.
-    ...roundRect([0, 0.55], 1.36, 0.95, 0.1, ui),
-    line([-0.52, 0.25, ui], [-0.25, 0.5, ui], LIME),
-    line([-0.25, 0.5, ui], [0.0, 0.38, ui], LIME),
-    line([0.0, 0.38, ui], [0.25, 0.72, ui], LIME),
-    line([0.25, 0.72, ui], [0.52, 0.82, ui], LIME),
-    ...roundRect([-0.36, -0.4], 0.62, 0.62, 0.1, ui),
-    ...roundRect([0.36, -0.4], 0.62, 0.62, 0.1, ui),
-    line([-0.68, -1.1, ui], [0.68, -1.1, ui]),
-    ...[-0.45, 0, 0.45].map(x => arc([x, -1.32, ui], 0.07, 0, Math.PI * 2)),
-    // Notification, hanging over the phone's edge.
-    ...roundRect([0.45, 1.25], 1.6, 0.46, 0.23, note, LIME),
-    arc([-0.13, 1.25, note], 0.11, 0, Math.PI * 2, LIME),
-    line([0.12, 1.32, note], [1.0, 1.32, note], LIME),
-    line([0.12, 1.16, note], [0.75, 1.16, note], LIME),
+    // The tile: front and back outlines, joined at the middle of each side.
+    ...roundRect([0, 0], 2.2, 2.2, 0.55, front),
+    ...roundRect([0, 0], 2.2, 2.2, 0.55, -front),
+    ...[[half, 0], [-half, 0], [0, half], [0, -half]].map(([x, y]) => line([x!, y!, -front], [x!, y!, front])),
+    // The sparkle: a four-pointed star with curved sides, and a small one beside it.
+    ...sparkle([-0.08, -0.08], 0.62, front),
+    ...sparkle([0.58, 0.58], 0.2, front),
+    // The orbit, tipped towards the viewer, and its nodes.
+    ...orbit(1.95, 0.65, 64),
+    ...[0.6, 2.6, 4.4].map(t => arc([1.95 * Math.cos(t), 0.65 * Math.sin(t), 1.95 * Math.sin(t) * 0.9], 0.1, 0, Math.PI * 2, LIME)),
   ], count, random)
+}
+
+// A four-pointed star whose sides curve inwards: one quarter arc between each pair of points.
+function sparkle([x, y]: [number, number], size: number, z: number) {
+  const q = Math.PI / 2
+  return [
+    arc([x + size, y + size, z], size, 2 * q, 3 * q, LIME),
+    arc([x - size, y + size, z], size, 3 * q, 4 * q, LIME),
+    arc([x - size, y - size, z], size, 0, q, LIME),
+    arc([x + size, y - size, z], size, q, 2 * q, LIME),
+  ]
+}
+
+// A flat ring around the icon, tilted so its front dips and its back rises, as short segments.
+function orbit(radius: number, lift: number, segments: number) {
+  const point = (t: number): [number, number, number] => [radius * Math.cos(t), lift * Math.sin(t), radius * Math.sin(t) * 0.9]
+  return Array.from({ length: segments }, (_, i) => line(point((i / segments) * Math.PI * 2), point(((i + 1) / segments) * Math.PI * 2)))
 }
