@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Brand tokens (direction A, "Signal"). Use them as Tailwind utilities: bg-ink, text-paper, text-lime, font-display... */
+@theme {
+  --color-ink: #0a0b0f;
+  --color-paper: #ecebe4;
+  --color-lime: #c8f542;
+  --color-violet: #5b5cf6;
+  --color-muted: #8a8a84;
+
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink text-paper font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-lime text-ink;
+  }
+}
