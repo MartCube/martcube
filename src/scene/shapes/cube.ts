@@ -1,5 +1,5 @@
-import { LIME, PAPER, VIOLET } from '../colors'
-import type { Shape } from './types'
+import { LIME, PAPER } from '../colors'
+import { tone, type Random, type Shape } from './types'
 
 const EDGE_SHARE = 0.45
 const HALF = 1.25
@@ -14,9 +14,9 @@ for (const a of [-1, 1]) {
 
 // The MartCube cube: dense edges, sparse faces, lime top face, paper sides, a few violet strays.
 // `random` is injectable so tests get the same cube every time.
-export function cubeShape(count: number, random: () => number = Math.random): Shape {
+export function cubeShape(count: number, random: Random = Math.random): Shape {
   const positions = new Float32Array(count * 3)
-  const colors = new Float32Array(count * 3)
+  const tones = new Float32Array(count)
 
   for (let i = 0; i < count; i++) {
     let x: number, y: number, z: number
@@ -38,8 +38,8 @@ export function cubeShape(count: number, random: () => number = Math.random): Sh
     }
 
     positions.set([x * HALF, y * HALF, z * HALF], i * 3)
-    colors.set(random() < 0.03 ? VIOLET : y > 0.99 ? LIME : PAPER, i * 3)
+    tones[i] = tone(random, y > 0.99 ? LIME : PAPER)
   }
 
-  return { positions, colors }
+  return { positions, tones }
 }

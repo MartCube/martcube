@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { LIME } from '../colors'
 import { sphereShape } from './sphere'
+import { pageShape, phoneShape, storeShape } from './services'
 import { waveShape } from './wave'
 
 const count = 3000
@@ -20,7 +21,7 @@ describe('waveShape', () => {
 })
 
 describe('sphereShape', () => {
-  const { positions, colors } = sphereShape(count, fixed)
+  const { positions, tones } = sphereShape(count, fixed)
 
   it('puts every point on the surface', () => {
     for (let i = 0; i < count; i++) {
@@ -30,9 +31,21 @@ describe('sphereShape', () => {
   })
 
   it('has a lime band around the equator', () => {
-    let lime = 0
-    for (let i = 0; i < count; i++) if (colors[i * 3] === Math.fround(LIME[0])) lime++
+    const lime = tones.filter(t => t === LIME).length
     expect(lime / count).toBeGreaterThan(0.05)
     expect(lime / count).toBeLessThan(0.12)
   })
+})
+
+describe('service shapes', () => {
+  for (const [name, build] of [['store', storeShape], ['page', pageShape], ['phone', phoneShape]] as const) {
+    it(`${name} fills every particle and stays in frame`, () => {
+      const { positions, tones } = build(count, fixed)
+      expect(positions).toHaveLength(count * 3)
+      expect(tones).toHaveLength(count)
+      expect(positions.every(Number.isFinite)).toBe(true)
+      expect(Math.max(...positions.map(Math.abs))).toBeLessThan(2.5)
+      expect(tones.some(t => t === LIME)).toBe(true)
+    })
+  }
 })
