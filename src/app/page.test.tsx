@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { services } from '@/content/home'
 import { StoreProvider } from '@/store/StoreProvider'
@@ -12,15 +12,24 @@ describe('Home', () => {
   it('renders the three slides in order', () => {
     renderHome()
 
-    const regions = screen.getAllByRole('region').map(r => r.getAttribute('aria-label'))
+    // The deck hides the slides that aren't showing, so count them all here.
+    const regions = screen.getAllByRole('region', { hidden: true }).map(r => r.getAttribute('aria-label'))
     expect(regions).toEqual(['Intro', 'Services', 'Contact'])
     expect(screen.getByRole('heading', { level: 1 })).toHaveAccessibleName('Websites that move.')
+  })
+
+  it('exposes only the slide that is showing', () => {
+    renderHome()
+
+    expect(screen.getAllByRole('region').map(r => r.getAttribute('aria-label'))).toEqual(['Intro'])
+    expect(document.getElementById('contact')).toHaveProperty('inert', true)
   })
 
   it('shows one panel per service, each reachable from the tabs', () => {
     renderHome()
 
-    const tabs = within(screen.getByRole('navigation', { name: 'Services' })).getAllByRole('link')
+    // Queried directly: the services slide starts hidden behind the hero.
+    const tabs = Array.from(document.querySelectorAll('nav[aria-label="Services"] a'))
     expect(tabs).toHaveLength(services.items.length)
     for (const [i, item] of services.items.entries()) {
       expect(tabs[i]).toHaveAttribute('href', `#${item.id}`)

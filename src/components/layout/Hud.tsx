@@ -24,7 +24,7 @@ export function Hud() {
           {pad(slideCount)}
         </span>
         <span aria-hidden="true" className="hidden h-0.5 w-[120px] overflow-hidden bg-line md:block">
-          <span className="block h-full origin-left bg-lime" style={{ transform: `scaleX(${progress})` }} />
+          <span className="block h-full origin-left bg-lime transition-transform duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]" style={{ transform: `scaleX(${progress})` }} />
         </span>
         <span className="hidden md:inline">SCROLL OR USE ↑ ↓</span>
       </div>

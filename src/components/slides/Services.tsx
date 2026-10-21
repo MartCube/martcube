@@ -3,14 +3,14 @@ import { services, type Service } from '@/content/home'
 import { Eyebrow } from './Eyebrow'
 import { ServiceTabs } from './ServiceTabs'
 
-// Four panels side by side. On desktop the scroll engine pins this section and moves the
-// track sideways as the page scrolls. On touch screens the track is swiped natively.
+// Four panels side by side. In the deck the engine slides the track sideways between them
+// (wheel, arrows, swipes or the tabs); on phones the panels act as tabs.
 export function Services() {
   return (
-    <section id="services" aria-label="Services" className="relative h-svh snap-start smooth:overflow-hidden">
+    <section id="services" aria-label="Services" tabIndex={-1} className="relative h-svh overflow-hidden outline-none deck:absolute deck:inset-0">
       <ServiceTabs />
 
-      <div data-track className="flex h-svh snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] smooth:snap-none smooth:overflow-visible">
+      <div data-track className="flex h-svh snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] deck:snap-none deck:overflow-visible">
         {services.items.map((item, i) => (
           <ServicePanel key={item.id} item={item} index={i} total={services.items.length} />
         ))}
@@ -32,9 +32,10 @@ function ServicePanel({ item, index, total }: ServicePanelProps) {
     <article
       id={item.id}
       aria-label={`${index + 1} of ${total}: ${line1} ${line2}`}
-      className="flex w-full shrink-0 snap-start items-end px-5 pt-36 pb-20 sm:items-center sm:px-12"
+      tabIndex={-1}
+      className="flex h-svh w-full shrink-0 snap-start flex-col overflow-y-auto overscroll-contain px-5 pt-36 pb-20 outline-none [scrollbar-width:none] sm:px-12"
     >
-      <div className="mx-auto w-full max-w-[1240px]">
+      <div className="mx-auto mt-auto w-full max-w-[1240px] sm:my-auto">
         <div className="max-w-[560px]">
           <Eyebrow>{services.eyebrow}</Eyebrow>
           <h2 className="font-display text-[52px] leading-[0.95] font-bold tracking-[-0.045em] sm:text-[clamp(56px,7vw,104px)]">

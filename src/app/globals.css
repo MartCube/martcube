@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* `smooth:` styles apply only while the desktop scroll engine runs (see src/motion/ScrollEngine.tsx). */
-@custom-variant smooth (&:where([data-scroll="smooth"], [data-scroll="smooth"] *));
+/* `deck:` styles apply only while the deck engine runs (see src/motion/DeckEngine.tsx). Without it the page is a plain scrolling page. */
+@custom-variant deck (&:where([data-deck], [data-deck] *));
 
 /* Brand tokens (direction A, "Signal"). Use them as Tailwind utilities: bg-ink, text-paper, text-lime, font-display... */
 @theme {
@@ -25,9 +25,12 @@
     color-scheme: dark;
   }
 
-  /* Touch, small screens and reduced motion: native scroll that settles on each slide. */
-  html[data-scroll="native"] {
-    scroll-snap-type: y proximity;
+  /* The deck: the page itself never scrolls, and pulling past the edge doesn't bounce or reload. */
+  html[data-deck],
+  html[data-deck] body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   body {

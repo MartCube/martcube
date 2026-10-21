@@ -104,14 +104,26 @@ export function arc(center: Vec, radius: number, start: number, end: number, t: 
   return { kind: 'arc', center, radius, start, end, tone: t }
 }
 
-// A flat square tile facing the viewer at depth z: its outline, or filled.
-export function tile(x: number, y: number, size: number, z: number, t: Tone = PAPER, filled = false): Mark[] {
-  if (filled) return [{ kind: 'face', origin: [x, y, z], u: [size, 0, 0], v: [0, size, 0], tone: t }]
-  const c = (dx: number, dy: number): Vec => [x + dx * size, y + dy * size, z]
+// A flat rectangle with rounded corners facing the viewer at depth z, as an outline.
+// `center` is [x, y]; corners are quarter arcs of radius r.
+export function roundRect([x, y]: [number, number], w: number, h: number, r: number, z: number, t: Tone = PAPER): Mark[] {
+  const hx = w / 2
+  const hy = h / 2
+  const edge = (from: Vec, to: Vec): Mark => ({ kind: 'edge', from, to, tone: t })
+  const q = Math.PI / 2
   return [
-    { kind: 'edge', from: c(0, 0), to: c(1, 0), tone: t },
-    { kind: 'edge', from: c(1, 0), to: c(1, 1), tone: t },
-    { kind: 'edge', from: c(1, 1), to: c(0, 1), tone: t },
-    { kind: 'edge', from: c(0, 1), to: c(0, 0), tone: t },
+    edge([x - hx + r, y + hy, z], [x + hx - r, y + hy, z]),
+    edge([x - hx + r, y - hy, z], [x + hx - r, y - hy, z]),
+    edge([x - hx, y - hy + r, z], [x - hx, y + hy - r, z]),
+    edge([x + hx, y - hy + r, z], [x + hx, y + hy - r, z]),
+    arc([x + hx - r, y + hy - r, z], r, 0, q, t),
+    arc([x - hx + r, y + hy - r, z], r, q, 2 * q, t),
+    arc([x - hx + r, y - hy + r, z], r, 2 * q, 3 * q, t),
+    arc([x + hx - r, y - hy + r, z], r, 3 * q, 4 * q, t),
   ]
+}
+
+// A straight line from one point to another.
+export function line(from: Vec, to: Vec, t: Tone = PAPER): Mark {
+  return { kind: 'edge', from, to, tone: t }
 }

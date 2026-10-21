@@ -1,6 +1,6 @@
 import { services } from '@/content/home'
 
-// A "stop" is one place the page snaps to: the hero, each service panel, then contact.
+// A "stop" is one place the deck can rest on: the hero, each service panel, then contact.
 export type Stop = { slide: number, service: number, id: string }
 
 export const stops: Stop[] = [
@@ -20,15 +20,17 @@ export function stopForHash(hash: string): number | undefined {
   return index === -1 ? undefined : index
 }
 
-export function stopForSlide(slide: number): number {
-  return Math.max(0, stops.findIndex(s => s.slide === slide))
+export function stopForSlide(slide: number, service = 0): number {
+  return Math.max(0, stops.findIndex(s => s.slide === slide && (slide !== 1 || s.service === service)))
 }
 
-// The stop whose scroll position is closest to `scroll`.
-export function nearestStop(scroll: number, positions: number[]): number {
-  let best = 0
-  positions.forEach((p, i) => {
-    if (Math.abs(p - scroll) < Math.abs((positions[best] ?? 0) - scroll)) best = i
-  })
-  return best
+// The stop one step up or down from `current`. Wide screens step through every service panel.
+// Phones have three slides: the services are tabs, so a step skips past them,
+// landing on the service that was last open.
+export function nextStop(current: number, direction: 1 | -1, compact: boolean, lastService = 0): number {
+  const here = stops[current] ?? stops[0]!
+  if (!compact) return Math.min(lastStop, Math.max(0, current + direction))
+  const slide = Math.min(slideCount - 1, Math.max(0, here.slide + direction))
+  if (slide === here.slide) return current
+  return stopForSlide(slide, lastService)
 }
