@@ -5,6 +5,8 @@ import { sendContact, type ContactState } from '@/app/actions/contact'
 import { Field, inputClass } from '@/components/ui/Field'
 import { contact } from '@/content/home'
 import { emptyContact, parseContact, type ContactField, type ContactInput } from '@/lib/contact-schema'
+import { useAppDispatch } from '@/store/hooks'
+import { messageSent } from '@/store/uiSlice'
 
 const initialState: ContactState = { status: 'idle' }
 const fieldOrder: ContactField[] = ['name', 'email', 'need', 'message']
@@ -19,7 +21,13 @@ function ContactFormRound({ onReset }: { onReset: () => void }) {
   const [state, formAction, pending] = useActionState(sendContact, initialState)
   const [values, setValues] = useState<ContactInput>(emptyContact)
   const [submitted, setSubmitted] = useState(false)
+  const dispatch = useAppDispatch()
   const { form } = contact
+
+  // Tell the rest of the page a message went out (the particle sphere bursts).
+  useEffect(() => {
+    if (state.status === 'sent') dispatch(messageSent())
+  }, [state.status, dispatch])
 
   // Errors only show after the first submit, then update live as the visitor types.
   const errors = submitted ? (parseContact(values).errors ?? {}) : {}

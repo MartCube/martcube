@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { makeStore } from './store'
-import { positionChanged, progressChanged, selectProgress, selectService, selectSlide } from './uiSlice'
+import { messageSent, positionChanged, progressChanged, selectProgress, selectSent, selectService, selectSlide } from './uiSlice'
 
 describe('ui slice', () => {
   it('starts on the first slide', () => {
@@ -23,5 +23,12 @@ describe('ui slice', () => {
     expect(selectProgress(store.getState())).toBe(1)
     store.dispatch(progressChanged(-0.2))
     expect(selectProgress(store.getState())).toBe(0)
+  })
+
+  it('counts sent messages', () => {
+    const store = makeStore()
+    store.dispatch(messageSent())
+    store.dispatch(messageSent())
+    expect(selectSent(store.getState())).toBe(2)
   })
 })

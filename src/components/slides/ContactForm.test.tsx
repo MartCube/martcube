@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { sendContact } from '@/app/actions/contact'
+import { StoreProvider } from '@/store/StoreProvider'
 import { ContactForm } from './ContactForm'
 
 vi.mock('@/app/actions/contact', () => ({
@@ -21,7 +22,7 @@ describe('ContactForm', () => {
 
   it('shows no errors before the first submit', async () => {
     const user = userEvent.setup()
-    render(<ContactForm />)
+    render(<ContactForm />, { wrapper: StoreProvider })
 
     await user.type(screen.getByLabelText('Email'), 'nope')
     expect(screen.getByLabelText('Email')).not.toHaveAttribute('aria-invalid')
@@ -29,7 +30,7 @@ describe('ContactForm', () => {
 
   it('blocks an invalid submit, shows errors and focuses the first bad field', async () => {
     const user = userEvent.setup()
-    render(<ContactForm />)
+    render(<ContactForm />, { wrapper: StoreProvider })
 
     await user.click(screen.getByRole('button', { name: 'Send message' }))
 
@@ -42,7 +43,7 @@ describe('ContactForm', () => {
 
   it('clears an error as soon as the field becomes valid', async () => {
     const user = userEvent.setup()
-    render(<ContactForm />)
+    render(<ContactForm />, { wrapper: StoreProvider })
 
     await user.click(screen.getByRole('button', { name: 'Send message' }))
     await user.type(screen.getByLabelText('Name'), 'Ana')
@@ -52,7 +53,7 @@ describe('ContactForm', () => {
 
   it('sends a valid form and shows the sent panel, then resets on "Send another"', async () => {
     const user = userEvent.setup()
-    render(<ContactForm />)
+    render(<ContactForm />, { wrapper: StoreProvider })
 
     await fillValid(user)
     await user.click(screen.getByRole('button', { name: 'Send message' }))
