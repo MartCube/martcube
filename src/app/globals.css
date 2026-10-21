@@ -6,7 +6,11 @@
   --color-paper: #ecebe4;
   --color-lime: #c8f542;
   --color-violet: #5b5cf6;
-  --color-muted: #8a8a84;
+  --color-muted: #a9a8a1;
+  --color-soft: #c9c8c1;
+  --color-line: #2a2b31;
+  --color-field: #111218;
+  --color-error: #ff7a6b;
 
   --font-display: var(--font-space-grotesk), system-ui, sans-serif;
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
@@ -16,6 +20,12 @@
 @layer base {
   html {
     color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   body {
