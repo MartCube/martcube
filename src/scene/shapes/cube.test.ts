@@ -12,11 +12,11 @@ function seeded(seed = 1) {
 
 describe('cubeShape', () => {
   const count = 2000
-  const { positions, colors } = cubeShape(count, seeded())
+  const { positions, tones } = cubeShape(count, seeded())
 
-  it('returns xyz and rgb for every particle', () => {
+  it('returns xyz and a tone for every particle', () => {
     expect(positions).toHaveLength(count * 3)
-    expect(colors).toHaveLength(count * 3)
+    expect(tones).toHaveLength(count)
   })
 
   it('keeps every particle on the cube surface', () => {
@@ -28,13 +28,8 @@ describe('cubeShape', () => {
   })
 
   it('colours the top face lime and most of the rest paper', () => {
-    let lime = 0
-    let paper = 0
-    for (let i = 0; i < count; i++) {
-      const c = [...colors.slice(i * 3, i * 3 + 3)]
-      if (c.every((v, k) => Math.abs(v - LIME[k]!) < 1e-6)) lime++
-      if (c.every((v, k) => Math.abs(v - PAPER[k]!) < 1e-6)) paper++
-    }
+    const lime = tones.filter(t => t === LIME).length
+    const paper = tones.filter(t => t === PAPER).length
     expect(lime).toBeGreaterThan(count * 0.05)
     expect(paper).toBeGreaterThan(count * 0.6)
   })

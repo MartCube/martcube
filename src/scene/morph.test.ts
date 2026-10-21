@@ -2,21 +2,30 @@ import { describe, expect, it } from 'vitest'
 import { morphProgress } from './morph'
 
 describe('morphProgress', () => {
-  const vh = 800
+  const viewportHeight = 800
+  const at = (servicesTop: number, panel: number, contactTop: number) =>
+    morphProgress({ servicesTop, panel, contactTop, viewportHeight })
 
   it('is 0 on the hero', () => {
-    expect(morphProgress(800, 1600, vh)).toBe(0)
+    expect(at(800, 0, 1600)).toBe(0)
   })
 
-  it('is halfway through the first morph when services is half in', () => {
-    expect(morphProgress(400, 1200, vh)).toBe(0.5)
+  it('is halfway to the first panel when services is half in', () => {
+    expect(at(400, 0, 1200)).toBe(0.5)
   })
 
-  it('stays at 1 while services is pinned', () => {
-    expect(morphProgress(0, 2400, vh)).toBe(1)
+  it('counts panels while services is pinned', () => {
+    expect(at(0, 0, 2400)).toBe(1)
+    expect(at(0, 1.5, 2400)).toBe(2.5)
+    expect(at(0, 3, 2400)).toBe(4)
   })
 
-  it('reaches 2 when contact is at the top', () => {
-    expect(morphProgress(-800, 0, vh)).toBe(2)
+  it('reaches 5 when contact is at the top', () => {
+    expect(at(-800, 3, 0)).toBe(5)
+  })
+
+  it('ignores panel overscroll', () => {
+    expect(at(0, 3.4, 2400)).toBe(4)
+    expect(at(0, -0.2, 2400)).toBe(1)
   })
 })

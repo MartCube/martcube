@@ -5,14 +5,17 @@ import gsap from 'gsap'
 import { useEffect, useMemo, useRef } from 'react'
 import type { ShaderMaterial } from 'three'
 import { useAppStore } from '@/store/hooks'
-import { morphProgress } from './morph'
+import { morphProgress, SCENES } from './morph'
 import { fragmentShader, vertexShader } from './shaders/particles'
 import { cubeShape } from './shapes/cube'
 import { scatter } from './shapes/scatter'
+import { pageShape, phoneShape, storeShape } from './shapes/services'
 import { sphereShape } from './shapes/sphere'
 import { waveShape } from './shapes/wave'
 
 const NARROW = 720
+// Shader attribute for each shape, in scroll order. The cube is `position`, three.js's built-in.
+const SHAPE_ATTRIBUTES = ['position', 'aWave', 'aStore', 'aPage', 'aPhone', 'aSphere']
 const POINT_SIZE = 0.055
 
 // The one WebGL canvas behind the whole page.
@@ -36,14 +39,17 @@ function Particles() {
   const size = useThree(s => s.size)
   const count = size.width < NARROW ? 3200 : 7000
 
-  // Built once per particle count: a start position, a spot in each shape, colours and a random seed.
-  const geometry = useMemo(() => ({
-    start: scatter(count),
-    cube: cubeShape(count),
-    wave: waveShape(count),
-    sphere: sphereShape(count),
-    seed: Float32Array.from({ length: count }, () => Math.random()),
-  }), [count])
+  // Built once per particle count: a start position, a spot in each shape, tones and a random seed.
+  const geometry = useMemo(() => {
+    const shapes = [cubeShape, waveShape, storeShape, pageShape, phoneShape, sphereShape].map(build => build(count))
+    return {
+      start: scatter(count),
+      positions: shapes.map(s => s.positions),
+      tonesA: interleave(shapes.slice(0, 3).map(s => s.tones)),
+      tonesB: interleave(shapes.slice(3).map(s => s.tones)),
+      seed: Float32Array.from({ length: count }, () => Math.random()),
+    }
+  }, [count])
 
   // Initial values only: R3F copies these into the material, so per-frame updates
   // go through `material.current.uniforms`, not this object.
@@ -52,10 +58,8 @@ function Particles() {
     uIntro: { value: 0 },
     uMorph: { value: 0 },
     uBurst: { value: 0 },
-    uCube: { value: [0, 0, 1] },
-    uWave: { value: [0, 0, 1] },
-    uSphere: { value: [0, 0, 1] },
-    uAlpha: { value: [1, 1, 1] },
+    uPlace: { value: new Float32Array(SCENES * 3) },
+    uAlpha: { value: new Float32Array(SCENES) },
     uTilt: { value: [0, 0] },
     uPointer: { value: [99, 99] },
     uPointerActive: { value: 0 },
@@ -92,15 +96,32 @@ function Particles() {
     u.uMorph.value += (morph() - u.uMorph.value) * 0.08
     u.uBurst.value = burst.current.value
 
-    // Where each shape sits. Wide screens: cube right of the hero text, a wave
-    // across the lower half of services, the sphere behind the contact form.
-    // Phones: everything smaller and higher, and dimmer where it sits behind text.
+    // Where each shape sits, as [x, y, scale] and opacity. Wide screens: shapes right of
+    // the text, the wave across the lower half. Phones: smaller and above the text,
+    // dimmer where they sit behind it.
     const w = viewport.width / 2
     const h = viewport.height / 2
-    u.uCube.value = narrow ? [w * 0.36, h * 0.5, 0.62] : [w * 0.48, 0, 1.15]
-    u.uWave.value = narrow ? [0, -h * 0.45, 0.6] : [0, -h * 0.4, 1]
-    u.uSphere.value = narrow ? [w * 0.3, h * 0.55, 0.6] : [w * 0.45, 0, 1.3]
-    u.uAlpha.value = narrow ? [0.55, 0.4, 0.35] : [1, 0.45, 0.6]
+    const scenes = narrow
+      ? [
+          [w * 0.36, h * 0.5, 0.62, 0.55], // cube
+          [0, -h * 0.45, 0.6, 0.4], // wave
+          [0, h * 0.42, 0.5, 0.6], // store cards
+          [0, h * 0.42, 0.5, 0.6], // page
+          [0, h * 0.4, 0.55, 0.6], // phone
+          [w * 0.3, h * 0.55, 0.6, 0.35], // sphere
+        ]
+      : [
+          [w * 0.48, 0, 1.15, 1],
+          [0, -h * 0.4, 1, 0.45],
+          [w * 0.5, -h * 0.02, 0.95, 0.9],
+          [w * 0.5, 0, 0.95, 0.9],
+          [w * 0.5, 0, 1, 0.9],
+          [w * 0.45, 0, 1.3, 0.6],
+        ]
+    scenes.forEach(([x, y, scale, alpha], i) => {
+      u.uPlace.value.set([x!, y!, scale!], i * 3)
+      u.uAlpha.value[i] = alpha!
+    })
     u.uPointSize.value = POINT_SIZE * (size.height / 2) * gl.getPixelRatio()
 
     // Ease the tilt toward the pointer, and the cursor push in and out.
@@ -115,13 +136,12 @@ function Particles() {
   return (
     <points frustumCulled={false}>
       <bufferGeometry key={count}>
-        <bufferAttribute attach="attributes-position" args={[geometry.cube.positions, 3]} />
         <bufferAttribute attach="attributes-aStart" args={[geometry.start, 3]} />
-        <bufferAttribute attach="attributes-aWave" args={[geometry.wave.positions, 3]} />
-        <bufferAttribute attach="attributes-aSphere" args={[geometry.sphere.positions, 3]} />
-        <bufferAttribute attach="attributes-aColor" args={[geometry.cube.colors, 3]} />
-        <bufferAttribute attach="attributes-aColorWave" args={[geometry.wave.colors, 3]} />
-        <bufferAttribute attach="attributes-aColorSphere" args={[geometry.sphere.colors, 3]} />
+        {SHAPE_ATTRIBUTES.map((name, i) => (
+          <bufferAttribute key={name} attach={`attributes-${name}`} args={[geometry.positions[i]!, 3]} />
+        ))}
+        <bufferAttribute attach="attributes-aTonesA" args={[geometry.tonesA, 3]} />
+        <bufferAttribute attach="attributes-aTonesB" args={[geometry.tonesB, 3]} />
         <bufferAttribute attach="attributes-aSeed" args={[geometry.seed, 1]} />
       </bufferGeometry>
       <shaderMaterial
@@ -136,16 +156,36 @@ function Particles() {
   )
 }
 
+// Three per-particle arrays into one, as [a0, b0, c0, a1, b1, c1, ...].
+function interleave(arrays: Float32Array[]): Float32Array {
+  const count = arrays[0]?.length ?? 0
+  const out = new Float32Array(count * arrays.length)
+  arrays.forEach((array, k) => array.forEach((v, i) => (out[i * arrays.length + k] = v)))
+  return out
+}
+
 // Reads the scroll position from the slides themselves, so it follows Lenis,
 // the pinned services strip and native scrolling alike.
 function useMorph() {
-  const slides = useRef<{ services: HTMLElement | null, contact: HTMLElement | null } | null>(null)
+  const slides = useRef<{ services: HTMLElement | null, panel: HTMLElement | null, contact: HTMLElement | null } | null>(null)
 
   return () => {
-    slides.current ??= { services: document.getElementById('services'), contact: document.getElementById('contact') }
-    const { services, contact } = slides.current
-    if (!services || !contact) return 0
-    return morphProgress(services.getBoundingClientRect().top, contact.getBoundingClientRect().top, window.innerHeight)
+    if (!slides.current) {
+      const services = document.getElementById('services')
+      slides.current = { services, panel: services?.querySelector('article') ?? null, contact: document.getElementById('contact') }
+    }
+    const { services, panel, contact } = slides.current
+    if (!services || !panel || !contact) return 0
+    const section = services.getBoundingClientRect()
+    const first = panel.getBoundingClientRect()
+    return morphProgress({
+      servicesTop: section.top,
+      contactTop: contact.getBoundingClientRect().top,
+      // The strip slides left (transform on desktop, native scroll on touch), so the
+      // first panel's offset says how many panels along it is.
+      panel: (section.left - first.left) / Math.max(1, first.width),
+      viewportHeight: window.innerHeight,
+    })
   }
 }
 
