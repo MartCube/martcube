@@ -91,6 +91,7 @@ function setupSmooth(report: Report) {
   let gestureUsed = false
   let lastWheel = 0
   let settleTimer: ReturnType<typeof setTimeout> | undefined
+  let cutShort = false
 
   function goTo(stop: number) {
     target = Math.min(positions.length - 1, Math.max(0, stop))
@@ -101,6 +102,8 @@ function setupSmooth(report: Report) {
       force: true,
       onComplete: () => {
         animating = false
+        // A refresh right after load can shrink the page for a moment and cut the jump short.
+        cutShort = Math.abs(lenis.scroll - (positions[target] ?? 0)) > 2
       },
     })
   }
@@ -127,6 +130,7 @@ function setupSmooth(report: Report) {
     clearTimeout(settleTimer)
     settleTimer = setTimeout(() => {
       if (animating) return
+      if (cutShort) return goTo(target)
       const nearest = nearestStop(lenis.scroll, positions)
       if (Math.abs(lenis.scroll - (positions[nearest] ?? 0)) > 2) goTo(nearest)
       else target = nearest
@@ -160,8 +164,11 @@ function setupSmooth(report: Report) {
     positions = [
       0,
       ...Array.from({ length: panels }, (_, i) => st.start + ((st.end - st.start) * i) / (panels - 1)),
-      contact!.getBoundingClientRect().top + window.scrollY,
+      // Contact follows the pinned section straight away. Taken from the trigger itself, because
+      // reading the DOM during a refresh can catch the pin spacer half-built.
+      st.end + section!.offsetHeight,
     ]
+    if (cutShort) goTo(target)
   }
 
   ScrollTrigger.addEventListener('refresh', measure)
