@@ -128,7 +128,7 @@ function Particles({ onReady }: { onReady: () => void }) {
           [0, -h * 0.45, 0.6, 0.4], // wave
           [0, h * 0.42, 0.5, 0.6], // store cards
           [0, h * 0.42, 0.5, 0.6], // CMS layers
-          [0, h * 0.4, 0.55, 0.6], // app icon
+          [0, h * 0.4, 0.55, 0.6], // phone
           [w * 0.3, h * 0.55, 0.6, 0.35], // sphere
         ]
       : [

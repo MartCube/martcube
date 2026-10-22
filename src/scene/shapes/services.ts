@@ -46,38 +46,34 @@ export function cmsShape(count: number, random?: Random): Shape {
   ], count, random)
 }
 
-// Apps: a 3D app icon, a rounded tile with depth, with a lime AI sparkle on its face
-// and a tilted orbit around it carrying three small lime nodes.
+// Apps: a phone running an AI chat. A question bubble, a lime answer bubble,
+// typing dots and the message bar, on a phone outline with a little depth.
 export function appShape(count: number, random?: Random): Shape {
-  const front = 0.22
-  const half = 1.1
+  const z = 0.14
   return build([
-    // The tile: front and back outlines, joined at the middle of each side.
-    ...roundRect([0, 0], 2.2, 2.2, 0.55, front),
-    ...roundRect([0, 0], 2.2, 2.2, 0.55, -front),
-    ...[[half, 0], [-half, 0], [0, half], [0, -half]].map(([x, y]) => line([x!, y!, -front], [x!, y!, front])),
-    // The sparkle: a four-pointed star with curved sides, and a small one beside it.
-    ...sparkle([-0.08, -0.08], 0.62, front),
-    ...sparkle([0.58, 0.58], 0.2, front),
-    // The orbit, tipped towards the viewer, and its nodes.
-    ...orbit(1.95, 0.65, 64),
-    ...[0.6, 2.6, 4.4].map(t => arc([1.95 * Math.cos(t), 0.65 * Math.sin(t), 1.95 * Math.sin(t) * 0.9], 0.1, 0, Math.PI * 2, LIME)),
+    ...phoneBody(),
+    // Question, with two lines of text.
+    ...roundRect([-0.18, 0.75], 1.15, 0.5, 0.2, z),
+    line([-0.55, 0.8, z], [0.15, 0.8, z]),
+    line([-0.55, 0.66, z], [-0.05, 0.66, z]),
+    // Answer in lime, with three lines.
+    ...roundRect([0.15, -0.05], 1.15, 0.75, 0.2, z, LIME),
+    line([-0.22, 0.12, z], [0.55, 0.12, z], LIME),
+    line([-0.22, -0.04, z], [0.5, -0.04, z], LIME),
+    line([-0.22, -0.2, z], [0.25, -0.2, z], LIME),
+    // Typing dots, then the message bar.
+    ...[-0.5, -0.32, -0.14].map(x => arc([x, -0.85, z], 0.06, 0, Math.PI * 2)),
+    ...roundRect([0, -1.35], 1.4, 0.32, 0.16, z),
   ], count, random)
 }
 
-// A four-pointed star whose sides curve inwards: one quarter arc between each pair of points.
-function sparkle([x, y]: [number, number], size: number, z: number) {
-  const q = Math.PI / 2
+// The phone: front and back outlines joined at the middle of each side, and the speaker slot.
+function phoneBody() {
+  const d = 0.12
   return [
-    arc([x + size, y + size, z], size, 2 * q, 3 * q, LIME),
-    arc([x - size, y + size, z], size, 3 * q, 4 * q, LIME),
-    arc([x - size, y - size, z], size, 0, q, LIME),
-    arc([x + size, y - size, z], size, q, 2 * q, LIME),
+    ...roundRect([0, 0], 1.8, 3.5, 0.3, d),
+    ...roundRect([0, 0], 1.8, 3.5, 0.3, -d),
+    ...[[0.9, 0], [-0.9, 0], [0, 1.75], [0, -1.75]].map(([x, y]) => line([x!, y!, -d], [x!, y!, d])),
+    ...roundRect([0, 1.52], 0.5, 0.12, 0.06, d),
   ]
-}
-
-// A flat ring around the icon, tilted so its front dips and its back rises, as short segments.
-function orbit(radius: number, lift: number, segments: number) {
-  const point = (t: number): [number, number, number] => [radius * Math.cos(t), lift * Math.sin(t), radius * Math.sin(t) * 0.9]
-  return Array.from({ length: segments }, (_, i) => line(point((i / segments) * Math.PI * 2), point(((i + 1) / segments) * Math.PI * 2)))
 }

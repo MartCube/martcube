@@ -1,7 +1,7 @@
 import { paletteGlsl } from '../colors'
 
 // Vertex shader: every particle has a spot in six shapes, one per deck stop:
-// 0 cube, 1 wave, 2 store bag, 3 CMS window, 4 app icon, 5 sphere.
+// 0 cube, 1 wave, 2 store bag, 3 CMS window, 4 phone, 5 sphere.
 // The deck morphs straight from shape `uFrom` to shape `uTo` as `uMix` runs 0 → 1,
 // so a jump from the cube to the sphere never passes through the shapes between.
 // Then the cursor pushes particles away. All motion is computed here, on the GPU.
@@ -67,7 +67,7 @@ export const vertexShader = /* glsl */ `
     vec3 wave = rotateX(0.45 + uTilt.y * 0.15) * rotateY(-0.2 + uTilt.x * 0.2) * w;
 
     // The bag turns slowly like the cube, seen a little from above. The CMS window and the
-    // app icon only sway, so their fronts keep facing the viewer and their layers show depth.
+    // phone only sway, so their fronts keep facing the viewer and their layers show depth.
     mat3 turn = rotateX(0.42 + uTilt.y * 0.3) * rotateY(uTime * 0.3 + 0.6 + uTilt.x * 0.5);
     mat3 sway = rotateX(0.15 + uTilt.y * 0.3) * rotateY(-0.4 + sin(uTime * 0.45) * 0.3 + uTilt.x * 0.5);
     vec3 store = turn * aStore;
