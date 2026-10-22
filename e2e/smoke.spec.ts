@@ -54,7 +54,7 @@ test.describe('contact form', () => {
     await form.getByLabel('Email').fill('ana@studio.mk')
     await form.getByLabel('Message').fill('We need a new store before spring.')
     await form.getByRole('button', { name: 'Send message' }).click()
-    await expect(page.getByRole('heading', { name: 'Message sent.' })).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('heading', { name: 'Thanks, Ana.' })).toBeVisible({ timeout: 10_000 })
   })
 })
 

@@ -3,10 +3,11 @@
 import { useActionState, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { sendContact, type ContactState } from '@/app/actions/contact'
 import { Field, inputClass } from '@/components/ui/Field'
+import { Spinner } from '@/components/ui/Spinner'
 import { contact } from '@/content/home'
 import { emptyContact, parseContact, type ContactField, type ContactInput } from '@/lib/contact-schema'
 import { useAppDispatch } from '@/store/hooks'
-import { messageSent } from '@/store/uiSlice'
+import { messageSent, sendingChanged } from '@/store/uiSlice'
 
 const initialState: ContactState = { status: 'idle' }
 const fieldOrder: ContactField[] = ['name', 'email', 'need', 'message']
@@ -28,6 +29,14 @@ function ContactFormRound({ onReset }: { onReset: () => void }) {
   useEffect(() => {
     if (state.status === 'sent') dispatch(messageSent())
   }, [state.status, dispatch])
+
+  // The header loader beside the logo spins while the message is on its way.
+  useEffect(() => {
+    dispatch(sendingChanged(pending))
+  }, [pending, dispatch])
+  useEffect(() => () => {
+    dispatch(sendingChanged(false))
+  }, [dispatch])
 
   // Errors only show after the first submit, then update live as the visitor types.
   const errors = submitted ? (parseContact(values).errors ?? {}) : {}
@@ -72,7 +81,8 @@ function ContactFormRound({ onReset }: { onReset: () => void }) {
     >
       {/* Honeypot: hidden from people and screen readers, filled in by bots. The server drops those messages. */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] size-px opacity-0" />
-      <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
+      {/* While sending, the fields dim and lock; the button stays bright with the spinner. */}
+      <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2 [&>*:not(:last-child)]:transition-opacity [&>*:not(:last-child)]:duration-300 disabled:[&>*:not(:last-child)]:opacity-45">
         <Field id="contact-name" label={form.name.label} error={errors.name}>
           <input {...fieldProps('name')} type="text" autoComplete="name" placeholder={form.name.placeholder} />
         </Field>
@@ -94,24 +104,14 @@ function ContactFormRound({ onReset }: { onReset: () => void }) {
           <button
             type="submit"
             aria-busy={pending || undefined}
-            className="inline-flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full bg-lime px-5 py-3 text-[15px] font-medium text-ink transition-colors hover:bg-[#d8ff6a] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-paper disabled:cursor-progress disabled:opacity-80"
+            className="inline-flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full bg-lime px-5 py-3 text-[15px] font-medium text-ink transition-colors hover:bg-[#d8ff6a] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-paper disabled:cursor-progress"
           >
-            {pending && <LoadingDots />}
+            {pending && <Spinner tone="ink" className="size-4" />}
             {pending ? form.sending : form.submit}
           </button>
         </div>
       </fieldset>
     </form>
-  )
-}
-
-function LoadingDots() {
-  return (
-    <span aria-hidden="true" className="inline-flex gap-1">
-      {[0, 150, 300].map(delay => (
-        <i key={delay} className="size-[5px] animate-pulse rounded-full bg-current" style={{ animationDelay: `${delay}ms` }} />
-      ))}
-    </span>
   )
 }
 
@@ -132,14 +132,14 @@ function SentPanel({ name, email, onReset }: SentPanelProps) {
 
   return (
     <div role="status" className="flex w-full flex-col items-start gap-5 rounded-[18px] border border-line bg-ink/85 px-6 py-9 sm:px-8 sm:py-10">
-      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
-        <g fill="none" stroke="#C8F542" strokeLinecap="round" strokeWidth="5" strokeDasharray="0 10">
-          <circle cx="32" cy="32" r="28" />
-          <path d="M18 33 L28 43 L47 22" />
-        </g>
-      </svg>
-      <h3 className="font-display text-[44px] leading-none font-bold tracking-[-0.04em]">{sent.title}</h3>
-      <p className="max-w-[26em] text-soft">{sent.body(name, email)}</p>
+      <p className="font-mono text-[13px] tracking-[0.14em] text-lime uppercase">{sent.eyebrow}</p>
+      <h3 className="font-display text-[44px] leading-none font-bold tracking-[-0.04em]">{sent.title(name)}</h3>
+      <p className="max-w-[26em] text-soft">
+        {sent.body[0]}
+        <span className="text-paper">{email}</span>
+        {sent.body[1]}
+      </p>
+      <span aria-hidden="true" className="h-0.5 w-[120px] bg-lime" />
       <button
         ref={againRef}
         type="button"
