@@ -30,8 +30,11 @@ test.describe('homepage', () => {
   test('arrow keys step through the slides', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('html[data-deck]')).toBeAttached()
-    await page.keyboard.press('ArrowDown')
-    await expect(page.getByRole('heading', { level: 1 })).toBeHidden()
+    // The deck holds keys while the particles start (up to 3s on a slow CI machine), so retry until one lands.
+    await expect(async () => {
+      await page.keyboard.press('ArrowDown')
+      await expect(page.getByRole('heading', { level: 1 })).toBeHidden({ timeout: 1500 })
+    }).toPass()
     await expect(page.getByRole('link', { name: 'Move', exact: true })).toHaveAttribute('aria-current', 'true')
     // Keys pressed while a transition plays are ignored, so retry until this one lands.
     await expect(async () => {

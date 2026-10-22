@@ -2,9 +2,9 @@
 
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { useAppDispatch } from '@/store/hooks'
-import type { AppDispatch } from '@/store/store'
-import { movingChanged, positionChanged, progressChanged } from '@/store/uiSlice'
+import { useAppStore } from '@/store/hooks'
+import type { AppStore } from '@/store/store'
+import { movingChanged, positionChanged, progressChanged, selectSceneLoading } from '@/store/uiSlice'
 import { controller, sceneMotion } from './controller'
 import { lastStop, nextStop, stopForHash, stopForSlide, stops } from './stops'
 
@@ -20,17 +20,21 @@ const GESTURE_END = 400
 // How far a wheel gesture or a swipe has to travel before it counts.
 const WHEEL_THRESHOLD = 24
 const SWIPE_THRESHOLD = 50
+// While the particles start, swipes, wheel and arrow keys wait (links and buttons don't).
+// A slow phone only holds the deck this long.
+const SCENE_HOLD = 3000
 
 // The page doesn't scroll. The three slides sit on top of each other and the engine
 // plays a transition between any two stops, so a jump from the hero to contact never
 // passes through the services. While a transition plays, input is locked.
 export function DeckEngine() {
-  const dispatch = useAppDispatch()
-  useGSAP(() => setupDeck(dispatch))
+  const store = useAppStore()
+  useGSAP(() => setupDeck(store))
   return null
 }
 
-function setupDeck(dispatch: AppDispatch) {
+function setupDeck(store: AppStore) {
+  const { dispatch } = store
   const root = document.documentElement
   const slides = ['hero', 'services', 'contact'].map(id => document.getElementById(id))
   const track = document.querySelector<HTMLElement>('#services [data-track]')
@@ -46,6 +50,17 @@ function setupDeck(dispatch: AppDispatch) {
   let lastService = 0
   let moving = false
   let timeline: gsap.core.Timeline | undefined
+
+  // Hold the deck from the moment the particle scene starts loading until it shows, at most SCENE_HOLD.
+  let holdUntil = 0
+  let sceneLoading = false
+  const unsubscribe = store.subscribe(() => {
+    const loading = selectSceneLoading(store.getState())
+    if (loading && !sceneLoading) holdUntil = performance.now() + SCENE_HOLD
+    if (!loading) holdUntil = 0
+    sceneLoading = loading
+  })
+  const held = () => performance.now() < holdUntil
 
   // The element that holds a stop's content: a service panel, or the whole slide.
   const holder = (stop: number) => {
@@ -135,13 +150,14 @@ function setupDeck(dispatch: AppDispatch) {
   }
 
   function step(direction: 1 | -1, options?: { focus?: boolean }) {
+    if (held()) return
     goTo(nextStop(current, direction, compact.matches, lastService), options)
   }
 
   // Next or previous service panel, staying inside the services slide.
   function stepService(direction: 1 | -1) {
     const { slide, service } = stops[current]!
-    if (slide !== 1) return
+    if (slide !== 1 || held()) return
     const next = Math.min(panels.length - 1, Math.max(0, service + direction))
     goTo(stopForSlide(1, next))
   }
@@ -276,6 +292,7 @@ function setupDeck(dispatch: AppDispatch) {
 
   return () => {
     unregister()
+    unsubscribe()
     timeline?.kill()
     window.removeEventListener('wheel', onWheel)
     window.removeEventListener('touchstart', onTouchStart)
