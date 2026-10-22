@@ -70,6 +70,8 @@ function ContactFormRound({ onReset }: { onReset: () => void }) {
       aria-label="Contact form"
       className="w-full rounded-[18px] border border-line bg-ink/85 p-5 backdrop-blur-sm sm:p-8"
     >
+      {/* Honeypot: hidden from people and screen readers, filled in by bots. The server drops those messages. */}
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] size-px opacity-0" />
       <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
         <Field id="contact-name" label={form.name.label} error={errors.name}>
           <input {...fieldProps('name')} type="text" autoComplete="name" placeholder={form.name.placeholder} />
