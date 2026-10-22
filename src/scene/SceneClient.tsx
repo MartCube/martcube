@@ -14,6 +14,7 @@ type Mode = 'waiting' | 'poster' | 'particles'
 
 // Phones and tablets: the WebGL start-up is the heaviest thing on the page, so they
 // show the static poster first and switch to particles on the first touch or scroll.
+// Until the particles show, the deck holds swipes (see DeckEngine); taps still work.
 const TOUCH = '(pointer: coarse), (max-width: 767px)'
 const FIRST_INPUT = ['pointerdown', 'touchstart', 'scroll', 'keydown', 'wheel'] as const
 
@@ -40,7 +41,12 @@ export default function SceneClient() {
   }, [starting, dispatch])
 
   useEffect(() => {
-    const start = () => setMode(canRunParticles() ? 'particles' : 'poster')
+    const start = () => {
+      const ok = canRunParticles()
+      // Flag the load straight away, so the swipe that started it is already held.
+      if (ok) dispatch(sceneLoadingChanged(true))
+      setMode(ok ? 'particles' : 'poster')
+    }
 
     if (plan.start === 'on-input') {
       const once = () => {
@@ -57,7 +63,7 @@ export default function SceneClient() {
     }
     const id = setTimeout(start, 300)
     return () => clearTimeout(id)
-  }, [plan])
+  }, [plan, dispatch])
 
   return (
     <>
