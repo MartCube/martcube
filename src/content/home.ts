@@ -65,12 +65,14 @@ export const contact = {
     },
     message: { label: 'Message', placeholder: 'What are you building, and roughly when?' },
     submit: 'Send message',
-    sending: 'Sending',
+    sending: 'Sending…',
     failed: 'Something went wrong. Please try again.',
   },
   sent: {
-    title: 'Message sent.',
-    body: (name: string, email: string) => `Thanks, ${name}. We read every message and will get back to you at ${email} soon.`,
+    eyebrow: 'Message sent',
+    title: (name: string) => `Thanks, ${name}.`,
+    // The visitor's email goes between the two halves.
+    body: ['We read every message and will reply to ', ' within one working day.'],
     again: 'Send another',
   },
 } as const

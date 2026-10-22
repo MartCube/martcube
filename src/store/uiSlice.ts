@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 // Where the visitor is on the homepage. Written by the deck engine,
-// read by the HUD, the service tabs and the particle scene. The scene reports when it's loading.
+// read by the HUD, the service tabs and the particle scene. The scene reports when it's loading, the contact form when it's sending.
 export type UiState = {
   slide: number
   service: number
@@ -10,11 +10,13 @@ export type UiState = {
   moving: boolean
   // True while the particle scene downloads and starts. The header loader spins.
   sceneLoading: boolean
+  // True while the contact form is sending. The header loader spins for this too.
+  sending: boolean
   // Counts sent messages, so the scene can react to each new one with a burst.
   sent: number
 }
 
-const initialState: UiState = { slide: 0, service: 0, progress: 0, moving: false, sceneLoading: false, sent: 0 }
+const initialState: UiState = { slide: 0, service: 0, progress: 0, moving: false, sceneLoading: false, sending: false, sent: 0 }
 
 export const uiSlice = createSlice({
   name: 'ui',
@@ -33,6 +35,9 @@ export const uiSlice = createSlice({
     sceneLoadingChanged(state, action: PayloadAction<boolean>) {
       state.sceneLoading = action.payload
     },
+    sendingChanged(state, action: PayloadAction<boolean>) {
+      state.sending = action.payload
+    },
     messageSent(state) {
       state.sent += 1
     },
@@ -43,9 +48,10 @@ export const uiSlice = createSlice({
     selectProgress: state => state.progress,
     selectMoving: state => state.moving,
     selectSceneLoading: state => state.sceneLoading,
+    selectSending: state => state.sending,
     selectSent: state => state.sent,
   },
 })
 
-export const { positionChanged, progressChanged, movingChanged, sceneLoadingChanged, messageSent } = uiSlice.actions
-export const { selectSlide, selectService, selectProgress, selectMoving, selectSceneLoading, selectSent } = uiSlice.selectors
+export const { positionChanged, progressChanged, movingChanged, sceneLoadingChanged, sendingChanged, messageSent } = uiSlice.actions
+export const { selectSlide, selectService, selectProgress, selectMoving, selectSceneLoading, selectSending, selectSent } = uiSlice.selectors

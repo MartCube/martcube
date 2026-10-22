@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { makeStore } from './store'
-import { messageSent, movingChanged, positionChanged, progressChanged, sceneLoadingChanged, selectMoving, selectProgress, selectSceneLoading, selectSent, selectService, selectSlide } from './uiSlice'
+import { messageSent, movingChanged, positionChanged, progressChanged, sceneLoadingChanged, selectMoving, selectProgress, selectSceneLoading, selectSending, selectSent, selectService, selectSlide, sendingChanged } from './uiSlice'
 
 describe('ui slice', () => {
   it('starts on the first slide', () => {
@@ -37,6 +37,13 @@ describe('ui slice', () => {
     expect(selectSceneLoading(store.getState())).toBe(false)
     store.dispatch(sceneLoadingChanged(true))
     expect(selectSceneLoading(store.getState())).toBe(true)
+  })
+
+  it('tracks whether the contact form is sending', () => {
+    const store = makeStore()
+    expect(selectSending(store.getState())).toBe(false)
+    store.dispatch(sendingChanged(true))
+    expect(selectSending(store.getState())).toBe(true)
   })
 
   it('counts sent messages', () => {

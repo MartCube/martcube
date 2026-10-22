@@ -58,9 +58,10 @@ describe('ContactForm', () => {
     await fillValid(user)
     await user.click(screen.getByRole('button', { name: 'Send message' }))
 
-    expect(await screen.findByRole('heading', { name: 'Message sent.' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Thanks, Ana.' })).toBeInTheDocument()
     expect(sendContact).toHaveBeenCalledOnce()
-    expect(screen.getByText(/Thanks, Ana\./)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Message sent')
+    expect(screen.getByRole('status')).toHaveTextContent('reply to ana@studio.mk within one working day')
 
     await user.click(screen.getByRole('button', { name: 'Send another' }))
     expect(screen.getByLabelText('Name')).toHaveValue('')
